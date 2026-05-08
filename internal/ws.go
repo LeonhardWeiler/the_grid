@@ -17,6 +17,7 @@ type ClientMsg struct {
 	Y           int    `json:"y"`
 	Color       string `json:"color"`
 	LastVersion int    `json:"lastVersion"`
+	ClientID 		string `json:"clientId"` // 🔥 NEW
 }
 
 func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
@@ -29,8 +30,12 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 	h.Add(conn)
 
 	defer func() {
+		id := h.connToID[conn]
+
+		delete(h.lastAction, id)
+		delete(h.connToID, conn)
+
 		h.Remove(conn)
-		delete(h.lastAction, conn)
 		conn.Close(websocket.StatusNormalClosure, "")
 	}()
 
@@ -51,6 +56,11 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 	// LOOP
 	// =========================
 	for {
+		if msg.Type == "init_client" {
+			h.connToID[conn] = msg.ClientID
+			continue
+		}
+
 		_, data, err := conn.Read(context.Background())
 		if err != nil {
 			return
@@ -84,20 +94,19 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 		// =========================
 		if msg.Type == "set_pixel" {
 
+			id := h.connToID[conn]
+
 			now := time.Now().UnixMilli()
 			cooldown := int64(5000)
 
-			last := h.lastAction[conn]
+			last := h.lastAction[id]
 
-			// ⛔ still in cooldown → ignore
 			if now-last < cooldown {
 				continue
 			}
 
-			// ✅ update last action
-			h.lastAction[conn] = now
+			h.lastAction[id] = now
 
-			// 🎨 set pixel
 			key := fmt.Sprintf("%d:%d", msg.X, msg.Y)
 
 			ev := h.Store.Set(key, msg.X, msg.Y, msg.Color)
@@ -112,7 +121,6 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 
 			h.Broadcast(out)
 
-			// ⏱️ ONLY ONE cooldown event
 			end := now + cooldown
 
 			cd, _ := json.Marshal(map[string]any{

@@ -1,6 +1,13 @@
 const canvas = document.getElementById("canvas")
 const ctx = canvas.getContext("2d")
 
+let clientId = localStorage.getItem("clientId")
+
+if (!clientId) {
+  clientId = crypto.randomUUID()
+  localStorage.setItem("clientId", clientId)
+}
+
 let cooldownEnd = 0
 const cooldownEl = document.getElementById("cooldown")
 
@@ -8,6 +15,13 @@ canvas.width = window.innerWidth
 canvas.height = window.innerHeight
 
 const ws = new WebSocket("ws://localhost:4000/ws")
+
+ws.onopen = () => {
+  ws.send(JSON.stringify({
+    type: "init_client",
+    clientId: clientId
+  }))
+}
 
 // =========================
 // WORLD

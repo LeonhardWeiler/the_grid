@@ -115,8 +115,8 @@ Broadcast Updates To All Clients
 * [x] Shared pixel state
 * [x] Real-time synchronization
 * [x] Deployment setup
+* [x] Rate limiting / cooldown
 * [ ] Auto Deployment via SSH
-* [ ] Rate limiting / cooldown
 * [ ] Multi-user testing
 * [ ] Binary WebSocket protocol
 
@@ -137,7 +137,6 @@ The project focuses on:
 
 ## Future Ideas
 
-* User cooldown system
 * Pixel history
 * Persistent canvas snapshots
 * Chunk-based updates

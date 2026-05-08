@@ -12,14 +12,16 @@ type Hub struct {
 	clients map[*websocket.Conn]bool
 	Store   *PixelStore
 
-	lastAction map[*websocket.Conn]int64
+	lastAction map[string]int64 // 🔥 CHANGED: clientId instead of conn
+	connToID   map[*websocket.Conn]string
 }
 
 func NewHub() *Hub {
 	return &Hub{
 		clients:    make(map[*websocket.Conn]bool),
 		Store:      NewPixelStore(),
-		lastAction: make(map[*websocket.Conn]int64),
+		lastAction: make(map[string]int64),
+		connToID:   make(map[*websocket.Conn]string),
 	}
 }
 
