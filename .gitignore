@@ -1,3 +1,11 @@
-tmp/
-vendor/
+# Nix
 result/
+result
+
+# Go
+vendor/
+*.exe
+
+# Misc
+tmp/
+*.log
