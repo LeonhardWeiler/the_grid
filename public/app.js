@@ -9,7 +9,7 @@ canvas.height = SIZE * PIXEL
 
 const ws = new WebSocket("ws://localhost:4000/ws")
 
-let version = 0
+let lastVersion = 0
 
 function draw(x, y, color) {
   ctx.fillStyle = color
@@ -20,7 +20,7 @@ ws.onmessage = (e) => {
   const msg = JSON.parse(e.data)
 
   if (msg.type === "init") {
-    version = msg.version
+    lastVersion = msg.version
 
     for (const key in msg.pixels) {
       const [x, y] = key.split(":").map(Number)
@@ -29,9 +29,16 @@ ws.onmessage = (e) => {
   }
 
   if (msg.type === "pixel_update") {
-    if (msg.version > version) {
-      version = msg.version
-      draw(msg.x, msg.y, msg.color)
+    lastVersion = msg.version
+    draw(msg.x, msg.y, msg.color)
+  }
+
+  if (msg.type === "sync") {
+    if (!Array.isArray(msg.events)) return
+
+    for (const ev of msg.events) {
+      lastVersion = ev.version
+      draw(ev.x, ev.y, ev.color)
     }
   }
 }

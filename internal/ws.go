@@ -3,18 +3,19 @@ package internal
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
-	"fmt"
 
 	"github.com/coder/websocket"
 )
 
 type ClientMsg struct {
-	Type  string `json:"type"`
-	X     int    `json:"x"`
-	Y     int    `json:"y"`
-	Color string `json:"color"`
+	Type        string `json:"type"`
+	X           int    `json:"x"`
+	Y           int    `json:"y"`
+	Color       string `json:"color"`
+	LastVersion int    `json:"lastVersion"`
 }
 
 func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
@@ -26,21 +27,21 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 
 	h.Add(conn)
 
-	// send full snapshot + version
-	snapshot, version := h.Store.GetSnapshot()
-
-	init, _ := json.Marshal(map[string]any{
-		"type":    "init",
-		"pixels":  snapshot,
-		"version": version,
-	})
-
-	_ = conn.Write(context.Background(), websocket.MessageText, init)
-
 	defer func() {
 		h.Remove(conn)
 		conn.Close(websocket.StatusNormalClosure, "")
 	}()
+
+	// INIT
+	snap, version := h.Store.Snapshot()
+
+	init, _ := json.Marshal(map[string]any{
+		"type":    "init",
+		"pixels":  snap,
+		"version": version,
+	})
+
+	_ = conn.Write(context.Background(), websocket.MessageText, init)
 
 	for {
 		_, data, err := conn.Read(context.Background())
@@ -53,17 +54,36 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
+		// 🔁 RECONNECT SYNC
+		if msg.Type == "sync" {
+			events := h.Store.GetSince(msg.LastVersion)
+
+			// NEVER nil
+			if events == nil {
+				events = []Event{}
+			}
+
+			out, _ := json.Marshal(map[string]any{
+				"type":   "sync",
+				"events": events,
+			})
+
+			_ = conn.Write(context.Background(), websocket.MessageText, out)
+			continue
+		}
+
+		// 🎨 SET PIXEL
 		if msg.Type == "set_pixel" {
 			key := fmt.Sprintf("%d:%d", msg.X, msg.Y)
 
-			version := h.Store.Set(key, msg.Color)
+			ev := h.Store.Set(key, msg.X, msg.Y, msg.Color)
 
 			out, _ := json.Marshal(map[string]any{
 				"type":    "pixel_update",
-				"version": version,
-				"x":       msg.X,
-				"y":       msg.Y,
-				"color":   msg.Color,
+				"version": ev.Version,
+				"x":       ev.X,
+				"y":       ev.Y,
+				"color":   ev.Color,
 			})
 
 			h.Broadcast(out)

@@ -11,7 +11,6 @@ func main() {
 	hub := internal.NewHub()
 
 	fs := http.FileServer(http.Dir("./public"))
-
 	http.Handle("/", fs)
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
