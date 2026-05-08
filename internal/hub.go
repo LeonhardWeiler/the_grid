@@ -11,12 +11,15 @@ type Hub struct {
 	mu      sync.Mutex
 	clients map[*websocket.Conn]bool
 	Store   *PixelStore
+
+	lastAction map[*websocket.Conn]int64
 }
 
 func NewHub() *Hub {
 	return &Hub{
-		clients: make(map[*websocket.Conn]bool),
-		Store:   NewPixelStore(),
+		clients:    make(map[*websocket.Conn]bool),
+		Store:      NewPixelStore(),
+		lastAction: make(map[*websocket.Conn]int64),
 	}
 }
 

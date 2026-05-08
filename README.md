@@ -110,14 +110,15 @@ Broadcast Updates To All Clients
 * [x] Nix development environment
 * [x] Basic HTTP server
 * [x] WebSocket server
-* [ ] Canvas rendering
-* [ ] Click-to-paint interaction
-* [ ] Shared pixel state
-* [ ] Real-time synchronization
+* [x] Canvas rendering
+* [x] Click-to-paint interaction
+* [x] Shared pixel state
+* [x] Real-time synchronization
+* [x] Deployment setup
+* [ ] Auto Deployment via SSH
 * [ ] Rate limiting / cooldown
 * [ ] Multi-user testing
 * [ ] Binary WebSocket protocol
-* [ ] Deployment setup
 
 ---
 
@@ -136,7 +137,6 @@ The project focuses on:
 
 ## Future Ideas
 
-* Zooming and panning
 * User cooldown system
 * Pixel history
 * Persistent canvas snapshots

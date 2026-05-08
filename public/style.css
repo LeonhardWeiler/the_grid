@@ -13,3 +13,16 @@ canvas {
 canvas:active {
   cursor: grabbing;
 }
+
+#cooldown {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  padding: 8px 12px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  font-family: sans-serif;
+  font-size: 14px;
+  border-radius: 6px;
+  z-index: 1000;
+}

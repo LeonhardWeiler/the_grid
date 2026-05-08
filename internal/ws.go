@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/coder/websocket"
 )
@@ -29,10 +30,13 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 
 	defer func() {
 		h.Remove(conn)
+		delete(h.lastAction, conn) // 🧼 cleanup
 		conn.Close(websocket.StatusNormalClosure, "")
 	}()
 
-	// INIT
+	// =========================
+	// INIT SNAPSHOT
+	// =========================
 	snap, version := h.Store.Snapshot()
 
 	init, _ := json.Marshal(map[string]any{
@@ -43,6 +47,9 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 
 	_ = conn.Write(context.Background(), websocket.MessageText, init)
 
+	// =========================
+	// MESSAGE LOOP
+	// =========================
 	for {
 		_, data, err := conn.Read(context.Background())
 		if err != nil {
@@ -54,11 +61,12 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		// 🔁 RECONNECT SYNC
+		// =========================
+		// RECONNECT SYNC
+		// =========================
 		if msg.Type == "sync" {
 			events := h.Store.GetSince(msg.LastVersion)
 
-			// NEVER nil
 			if events == nil {
 				events = []Event{}
 			}
@@ -72,8 +80,33 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		// 🎨 SET PIXEL
+		// =========================
+		// SET PIXEL + COOLDOWN
+		// =========================
 		if msg.Type == "set_pixel" {
+
+			now := time.Now().UnixMilli()
+			cooldown := int64(5000)
+
+			last := h.lastAction[conn]
+
+			// ⛔ still in cooldown
+			if now-last < cooldown {
+				end := last + cooldown
+
+				out, _ := json.Marshal(map[string]any{
+					"type": "cooldown",
+					"end":  end,
+				})
+
+				_ = conn.Write(context.Background(), websocket.MessageText, out)
+				continue
+			}
+
+			// ✅ update last action FIRST
+			h.lastAction[conn] = now
+
+			// 🎨 set pixel
 			key := fmt.Sprintf("%d:%d", msg.X, msg.Y)
 
 			ev := h.Store.Set(key, msg.X, msg.Y, msg.Color)
@@ -87,6 +120,17 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 			})
 
 			h.Broadcast(out)
+
+			// ⏱️ IMPORTANT:
+			// sofort cooldown senden → UI startet direkt nach successful click
+			end := now + cooldown
+
+			cd, _ := json.Marshal(map[string]any{
+				"type": "cooldown",
+				"end":  end,
+			})
+
+			_ = conn.Write(context.Background(), websocket.MessageText, cd)
 		}
 	}
 }

@@ -1,6 +1,10 @@
 const canvas = document.getElementById("canvas")
 const ctx = canvas.getContext("2d")
 
+let cooldownEnd = 0
+let cooldownInterval = null
+const cooldownEl = document.getElementById("cooldown")
+
 canvas.width = window.innerWidth
 canvas.height = window.innerHeight
 
@@ -135,33 +139,49 @@ function drawAll() {
 ws.onmessage = (e) => {
   const msg = JSON.parse(e.data)
 
-  if (msg.type === "init") {
-    for (const key in msg.pixels) {
-      pixels.set(key, msg.pixels[key])
-    }
-    needsRedraw = true
-    drawAll()
-  }
+  switch (msg.type) {
 
-  if (msg.type === "pixel_update") {
-    const key = `${msg.x}:${msg.y}`
-    pixels.set(key, msg.color)
-
-    needsRedraw = true
-    drawAll()
-  }
-
-  if (msg.type === "sync") {
-    if (!Array.isArray(msg.events)) return
-
-    for (const ev of msg.events) {
-      const key = `${ev.x}:${ev.y}`
-      pixels.set(key, ev.color)
+    case "init": {
+      for (const key in msg.pixels) {
+        pixels.set(key, msg.pixels[key])
+      }
+      needsRedraw = true
+      drawAll()
+      break
     }
 
-    needsRedraw = true
-    drawAll()
+    case "pixel_update": {
+      const key = `${msg.x}:${msg.y}`
+      pixels.set(key, msg.color)
+
+      needsRedraw = true
+      drawAll()
+      break
+    }
+
+    case "sync": {
+      if (!Array.isArray(msg.events)) return
+
+      for (const ev of msg.events) {
+        const key = `${ev.x}:${ev.y}`
+        pixels.set(key, ev.color)
+      }
+
+      needsRedraw = true
+      drawAll()
+      break
+    }
+
+    case "cooldown": {
+      handleCooldown(msg)
+      break
+    }
   }
+}
+
+function handleCooldown(msg) {
+  cooldownEnd = msg.end
+  startCooldownUI()
 }
 
 // =========================
@@ -249,6 +269,28 @@ window.addEventListener("wheel", (e) => {
   needsRedraw = true
   drawAll()
 }, { passive: false })
+
+
+function startCooldownUI() {
+  if (cooldownInterval) return
+
+  updateCooldownUI() // 🔥 sofort erster Frame
+
+  cooldownInterval = setInterval(updateCooldownUI, 100)
+}
+
+function updateCooldownUI() {
+  const remaining = cooldownEnd - Date.now()
+
+  if (remaining <= 0) {
+    cooldownEl.textContent = "Ready"
+    clearInterval(cooldownInterval)
+    cooldownInterval = null
+    return
+  }
+
+  cooldownEl.textContent = `Cooldown: ${(remaining / 1000).toFixed(1)}s`
+}
 
 // =========================
 // INIT
