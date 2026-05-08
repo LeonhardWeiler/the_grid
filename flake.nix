@@ -1,5 +1,5 @@
 {
-  description = "the_grid dev environment";
+  description = "The Grid - Go realtime canvas dev environment";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -9,17 +9,23 @@
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs { inherit system; };
+        pkgs = import nixpkgs {
+          inherit system;
+        };
       in {
         devShells.default = pkgs.mkShell {
-          buildInputs = [
-            pkgs.elixir
-            pkgs.erlang
-            pkgs.nodejs
-            pkgs.git
-            pkgs.inotify-tools
-            pkgs.watchman
+          packages = with pkgs; [
+            go
+            gopls
+            gotools
+            air
+            git
           ];
+
+          shellHook = ''
+            echo "The Grid Go dev environment ready"
+            go version
+          '';
         };
       });
 }

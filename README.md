@@ -1,12 +1,42 @@
-# The Grid (r/place Clone)
+# The Grid
 
-A simple real-time pixel canvas built with:
+A minimal real-time pixel canvas inspired by r/place.
 
-* Elixir / Phoenix
-* WebSockets (Phoenix Channels)
-* Vanilla Canvas (no frontend framework)
-* Nix Flakes (optional, recommended)
+Built with:
+
+* Go
+* WebSockets
+* Vanilla HTML/CSS/JS
+* HTML Canvas API
+* Nix Flakes (optional)
 * In-memory state (no database)
+
+---
+
+## Features
+
+* Real-time pixel synchronization
+* Lightweight WebSocket server
+* Minimal frontend (no framework)
+* Single Go backend
+* No database required
+* Fast development setup
+
+---
+
+## Tech Stack
+
+### Backend
+
+* Go
+* `github.com/coder/websocket`
+* `net/http`
+
+### Frontend
+
+* Vanilla JavaScript
+* HTML5 Canvas
+* CSS
 
 ---
 
@@ -17,14 +47,16 @@ A simple real-time pixel canvas built with:
 ```bash
 git clone https://gitlab.com/htl-villach/it/classes/3ahitm-2025/sew/game/sj25_26_3ahitm_game_weilerl
 cd the_grid
+
 nix develop
-mix deps.get
-mix phx.server
+
+go mod tidy
+air
 ```
 
 Open:
 
-```
+```text
 http://localhost:4000
 ```
 
@@ -34,35 +66,81 @@ http://localhost:4000
 
 Requirements:
 
-* Elixir 1.16+
-* Erlang/OTP 26+
+* Go 1.24+
+
+Install dependencies:
 
 ```bash
-mix deps.get
-mix phx.server
+go mod tidy
+```
+
+Run the server:
+
+```bash
+go run .
+```
+
+Or with hot reload:
+
+```bash
+air
 ```
 
 ---
 
 ## Concept
 
+```text
 Browser Canvas
-→ WebSocket connection
-→ Phoenix Channels
-→ shared pixel state (server-side)
-→ broadcast updates to all clients in real time
+    ↓
+WebSocket Connection
+    ↓
+Go WebSocket Server
+    ↓
+Shared In-Memory Grid State
+    ↓
+Broadcast Updates To All Clients
+```
 
 ---
 
-## Roadmap
+## Current Status
 
-* [x] Phoenix project setup
-* [x] Nix development environment (flakes)
-* [x] Basic HTTP server running
-* [ ] Canvas frontend (drawing + rendering grid)
-* [ ] WebSocket pixel updates (real-time sync)
-* [ ] Shared grid state implementation (ETS)
+* [x] Go project setup
+* [x] Nix development environment
+* [x] Basic HTTP server
+* [x] WebSocket server
+* [ ] Canvas rendering
 * [ ] Click-to-paint interaction
-* [ ] Basic rate limiting (anti-spam / cooldown per user)
-* [ ] Multi-user synchronization tested
-* [ ] Deployment setup (optional)
+* [ ] Shared pixel state
+* [ ] Real-time synchronization
+* [ ] Rate limiting / cooldown
+* [ ] Multi-user testing
+* [ ] Binary WebSocket protocol
+* [ ] Deployment setup
+
+---
+
+## Goals
+
+The project focuses on:
+
+* simplicity
+* performance
+* minimalism
+* real-time communication
+* no frontend framework
+* low overhead
+
+---
+
+## Future Ideas
+
+* Zooming and panning
+* User cooldown system
+* Pixel history
+* Persistent canvas snapshots
+* Chunk-based updates
+* Binary packet protocol
+* Redis PubSub scaling
+* Multi-server support
