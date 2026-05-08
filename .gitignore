@@ -1,11 +1,18 @@
-# Nix
+# ---- Nix ----
 result/
-result
+result*
+/result
 
-# Go
+# ---- Go ----
 vendor/
 *.exe
+*.out
 
-# Misc
+# ---- OS / IDE ----
+.DS_Store
+.vscode/
+.idea/
+
+# ---- Logs / temp ----
 tmp/
 *.log
