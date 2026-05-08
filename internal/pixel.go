@@ -3,8 +3,9 @@ package internal
 import "sync"
 
 type PixelStore struct {
-	mu     sync.Mutex
-	pixels map[string]string
+	mu      sync.Mutex
+	pixels  map[string]string
+	version int
 }
 
 func NewPixelStore() *PixelStore {
@@ -13,19 +14,24 @@ func NewPixelStore() *PixelStore {
 	}
 }
 
-func (p *PixelStore) Set(key string, color string) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	p.pixels[key] = color
+func (s *PixelStore) Set(key string, color string) int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.version++
+	s.pixels[key] = color
+
+	return s.version
 }
 
-func (p *PixelStore) GetAll() map[string]string {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+func (s *PixelStore) GetSnapshot() (map[string]string, int) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
 	copy := make(map[string]string)
-	for k, v := range p.pixels {
+	for k, v := range s.pixels {
 		copy[k] = v
 	}
-	return copy
+
+	return copy, s.version
 }

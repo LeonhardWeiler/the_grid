@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"fmt"
 
 	"github.com/coder/websocket"
 )
 
-type PixelMsg struct {
+type ClientMsg struct {
 	Type  string `json:"type"`
 	X     int    `json:"x"`
 	Y     int    `json:"y"`
@@ -23,17 +24,21 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.AddClient(conn)
+	h.Add(conn)
 
-	// init state
-	initMsg, _ := json.Marshal(map[string]any{
-		"type":   "init",
-		"pixels": h.Store.GetAll(),
+	// send full snapshot + version
+	snapshot, version := h.Store.GetSnapshot()
+
+	init, _ := json.Marshal(map[string]any{
+		"type":    "init",
+		"pixels":  snapshot,
+		"version": version,
 	})
-	conn.Write(context.Background(), websocket.MessageText, initMsg)
+
+	_ = conn.Write(context.Background(), websocket.MessageText, init)
 
 	defer func() {
-		h.RemoveClient(conn)
+		h.Remove(conn)
 		conn.Close(websocket.StatusNormalClosure, "")
 	}()
 
@@ -43,7 +48,7 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		var msg PixelMsg
+		var msg ClientMsg
 		if err := json.Unmarshal(data, &msg); err != nil {
 			continue
 		}
@@ -51,13 +56,14 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 		if msg.Type == "set_pixel" {
 			key := fmt.Sprintf("%d:%d", msg.X, msg.Y)
 
-			h.Store.Set(key, msg.Color)
+			version := h.Store.Set(key, msg.Color)
 
 			out, _ := json.Marshal(map[string]any{
-				"type":  "pixel_update",
-				"x":     msg.X,
-				"y":     msg.Y,
-				"color": msg.Color,
+				"type":    "pixel_update",
+				"version": version,
+				"x":       msg.X,
+				"y":       msg.Y,
+				"color":   msg.Color,
 			})
 
 			h.Broadcast(out)

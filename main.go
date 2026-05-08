@@ -13,6 +13,7 @@ func main() {
 	fs := http.FileServer(http.Dir("./public"))
 
 	http.Handle("/", fs)
+
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		internal.HandleWS(hub, w, r)
 	})

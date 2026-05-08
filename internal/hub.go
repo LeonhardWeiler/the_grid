@@ -20,13 +20,13 @@ func NewHub() *Hub {
 	}
 }
 
-func (h *Hub) AddClient(c *websocket.Conn) {
+func (h *Hub) Add(c *websocket.Conn) {
 	h.mu.Lock()
 	h.clients[c] = true
 	h.mu.Unlock()
 }
 
-func (h *Hub) RemoveClient(c *websocket.Conn) {
+func (h *Hub) Remove(c *websocket.Conn) {
 	h.mu.Lock()
 	delete(h.clients, c)
 	h.mu.Unlock()
