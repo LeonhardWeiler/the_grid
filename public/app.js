@@ -188,6 +188,7 @@ function handleCooldown(msg) {
 // CLICK (SAFE + BOUND)
 // =========================
 canvas.addEventListener("click", (e) => {
+  if (Date.now() < cooldownEnd) return  // optional UX guard
   if (dragMoved) return
 
   const worldX = Math.floor(
@@ -270,12 +271,10 @@ window.addEventListener("wheel", (e) => {
   drawAll()
 }, { passive: false })
 
-
 function startCooldownUI() {
   if (cooldownInterval) return
 
-  updateCooldownUI() // 🔥 sofort erster Frame
-
+  updateCooldownUI()
   cooldownInterval = setInterval(updateCooldownUI, 100)
 }
 
@@ -283,6 +282,7 @@ function updateCooldownUI() {
   const remaining = cooldownEnd - Date.now()
 
   if (remaining <= 0) {
+    cooldownEnd = 0
     cooldownEl.textContent = "Ready"
     clearInterval(cooldownInterval)
     cooldownInterval = null

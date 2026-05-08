@@ -30,12 +30,12 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 
 	defer func() {
 		h.Remove(conn)
-		delete(h.lastAction, conn) // 🧼 cleanup
+		delete(h.lastAction, conn)
 		conn.Close(websocket.StatusNormalClosure, "")
 	}()
 
 	// =========================
-	// INIT SNAPSHOT
+	// INIT
 	// =========================
 	snap, version := h.Store.Snapshot()
 
@@ -48,7 +48,7 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 	_ = conn.Write(context.Background(), websocket.MessageText, init)
 
 	// =========================
-	// MESSAGE LOOP
+	// LOOP
 	// =========================
 	for {
 		_, data, err := conn.Read(context.Background())
@@ -62,11 +62,10 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 		}
 
 		// =========================
-		// RECONNECT SYNC
+		// SYNC
 		// =========================
 		if msg.Type == "sync" {
 			events := h.Store.GetSince(msg.LastVersion)
-
 			if events == nil {
 				events = []Event{}
 			}
@@ -81,7 +80,7 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 		}
 
 		// =========================
-		// SET PIXEL + COOLDOWN
+		// SET PIXEL (COOLDOWN CLEAN)
 		// =========================
 		if msg.Type == "set_pixel" {
 
@@ -90,20 +89,12 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 
 			last := h.lastAction[conn]
 
-			// ⛔ still in cooldown
+			// ⛔ still in cooldown → ignore
 			if now-last < cooldown {
-				end := last + cooldown
-
-				out, _ := json.Marshal(map[string]any{
-					"type": "cooldown",
-					"end":  end,
-				})
-
-				_ = conn.Write(context.Background(), websocket.MessageText, out)
 				continue
 			}
 
-			// ✅ update last action FIRST
+			// ✅ update last action
 			h.lastAction[conn] = now
 
 			// 🎨 set pixel
@@ -121,8 +112,7 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 
 			h.Broadcast(out)
 
-			// ⏱️ IMPORTANT:
-			// sofort cooldown senden → UI startet direkt nach successful click
+			// ⏱️ ONLY ONE cooldown event
 			end := now + cooldown
 
 			cd, _ := json.Marshal(map[string]any{
