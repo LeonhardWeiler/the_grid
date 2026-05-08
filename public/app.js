@@ -2,7 +2,6 @@ const canvas = document.getElementById("canvas")
 const ctx = canvas.getContext("2d")
 
 let cooldownEnd = 0
-let cooldownInterval = null
 const cooldownEl = document.getElementById("cooldown")
 
 canvas.width = window.innerWidth
@@ -271,11 +270,13 @@ window.addEventListener("wheel", (e) => {
   drawAll()
 }, { passive: false })
 
-function startCooldownUI() {
-  if (cooldownInterval) return
+let cooldownRunning = false
 
-  updateCooldownUI()
-  cooldownInterval = setInterval(updateCooldownUI, 100)
+function startCooldownUI() {
+  if (cooldownRunning) return
+
+  cooldownRunning = true
+  requestAnimationFrame(updateCooldownUI)
 }
 
 function updateCooldownUI() {
@@ -284,12 +285,13 @@ function updateCooldownUI() {
   if (remaining <= 0) {
     cooldownEnd = 0
     cooldownEl.textContent = "Ready"
-    clearInterval(cooldownInterval)
-    cooldownInterval = null
+    cooldownRunning = false
     return
   }
 
   cooldownEl.textContent = `Cooldown: ${(remaining / 1000).toFixed(1)}s`
+
+  requestAnimationFrame(updateCooldownUI)
 }
 
 // =========================
