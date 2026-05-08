@@ -1,0 +1,17 @@
+stages:
+  - build
+
+variables:
+  GIT_STRATEGY: fetch
+
+build:
+  stage: build
+  image: nixos/nix:latest
+
+  script:
+    - nix --extra-experimental-features "nix-command flakes" build
+
+  artifacts:
+    paths:
+      - result/bin/the-grid
+    expire_in: 1 week
