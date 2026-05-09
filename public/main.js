@@ -134,3 +134,18 @@ setupZoomControls()
 // =========================
 fitToScreen()
 drawAll()
+
+function updateCamera() {
+
+  camera.x += (camera.tx - camera.x) * 0.15
+  camera.y += (camera.ty - camera.y) * 0.15
+
+  camera.zoom += (camera.tzoom - camera.zoom) * 0.15
+
+  setNeedsRedraw(true)
+  drawAll()
+
+  requestAnimationFrame(updateCamera)
+}
+
+updateCamera()

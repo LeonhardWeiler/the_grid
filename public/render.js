@@ -19,37 +19,52 @@ export function setNeedsRedraw(v) {
 function drawGrid() {
 
   const step = BASE_PIXEL_SIZE * camera.zoom
-  if (step < 4) return
 
-  ctx.strokeStyle = "rgba(0,0,0,0.2)"
+  // zu weit rausgezoomt
+  if (step < 8) return
+
+  ctx.strokeStyle = "rgba(255,255,255,1)"
   ctx.lineWidth = 1
 
-  const offsetX = (camera.x * step)
-  const offsetY = (camera.y * step)
+  const startWorldX =
+    Math.floor(camera.x - canvas.width / 2 / step)
 
-  const startX = -offsetX + canvas.width / 2
-  const startY = -offsetY + canvas.height / 2
+  const endWorldX =
+    Math.ceil(camera.x + canvas.width / 2 / step)
 
-  const cols = Math.ceil(canvas.width / step)
-  const rows = Math.ceil(canvas.height / step)
+  const startWorldY =
+    Math.floor(camera.y - canvas.height / 2 / step)
 
-  for (let x = 0; x <= cols; x++) {
+  const endWorldY =
+    Math.ceil(camera.y + canvas.height / 2 / step)
 
-    const sx = startX + x * step
+  // verticale linien
+  for (let x = startWorldX; x <= endWorldX; x++) {
+
+    const screenX =
+      Math.round(
+        (x - camera.x) * step +
+        canvas.width / 2
+      ) + 0.5
 
     ctx.beginPath()
-    ctx.moveTo(sx, 0)
-    ctx.lineTo(sx, canvas.height)
+    ctx.moveTo(screenX, 0)
+    ctx.lineTo(screenX, canvas.height)
     ctx.stroke()
   }
 
-  for (let y = 0; y <= rows; y++) {
+  // horizontale linien
+  for (let y = startWorldY; y <= endWorldY; y++) {
 
-    const sy = startY + y * step
+    const screenY =
+      Math.round(
+        (y - camera.y) * step +
+        canvas.height / 2
+      ) + 0.5
 
     ctx.beginPath()
-    ctx.moveTo(0, sy)
-    ctx.lineTo(canvas.width, sy)
+    ctx.moveTo(0, screenY)
+    ctx.lineTo(canvas.width, screenY)
     ctx.stroke()
   }
 }
@@ -97,10 +112,13 @@ export function drawAll() {
 
   if (!needsRedraw) return
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  // Hintergrund
+  ctx.fillStyle = "#111"
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-  drawPixels()
+  // Reihenfolge wichtig
   drawGrid()
+  drawPixels()
 
   needsRedraw = false
 }

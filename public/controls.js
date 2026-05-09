@@ -41,8 +41,8 @@ export function setupPanControls() {
     const dx = e.clientX - last.x
     const dy = e.clientY - last.y
 
-    camera.x -= dx / (BASE_PIXEL_SIZE * camera.zoom)
-    camera.y -= dy / (BASE_PIXEL_SIZE * camera.zoom)
+    camera.tx -= dx / (BASE_PIXEL_SIZE * camera.zoom)
+    camera.ty -= dy / (BASE_PIXEL_SIZE * camera.zoom)
 
     camera.x =
       Math.max(0, Math.min(GRID_SIZE, camera.x))
@@ -79,16 +79,13 @@ export function setupZoomControls() {
     const zoomFactor = 1.1
 
     if (e.deltaY < 0) {
-      camera.zoom *= zoomFactor
+      camera.tzoom *= zoomFactor
     } else {
-      camera.zoom /= zoomFactor
+      camera.tzoom /= zoomFactor
     }
 
-    camera.zoom =
-      Math.max(0.05, Math.min(2, camera.zoom))
-
-    setNeedsRedraw(true)
-    drawAll()
+    camera.tzoom =
+      Math.max(0.01, Math.min(20, camera.tzoom))
 
   }, { passive: false })
 }

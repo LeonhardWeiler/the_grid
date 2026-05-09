@@ -6,14 +6,22 @@ export const BASE_PIXEL_SIZE = 40
 export const camera = {
   x: GRID_SIZE / 2,
   y: GRID_SIZE / 2,
-  zoom: 1
+
+  tx: GRID_SIZE / 2,
+  ty: GRID_SIZE / 2,
+
+  zoom: 1,
+  tzoom: 1
 }
 
 export function fitToScreen() {
 
-  // schöner Startzoom
-  camera.zoom = 0.5
+  camera.zoom = 0.6
+  camera.tzoom = 0.6
 
   camera.x = GRID_SIZE / 2
   camera.y = GRID_SIZE / 2
+
+  camera.tx = GRID_SIZE / 2
+  camera.ty = GRID_SIZE / 2
 }
