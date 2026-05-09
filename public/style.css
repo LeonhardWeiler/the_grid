@@ -7,7 +7,7 @@ body {
 canvas {
   display: block;
   cursor: grab;
-  background-color: grey;
+  background-color: white;
 }
 
 canvas:active {

@@ -56,11 +56,6 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 	// LOOP
 	// =========================
 	for {
-		if msg.Type == "init_client" {
-			h.connToID[conn] = msg.ClientID
-			continue
-		}
-
 		_, data, err := conn.Read(context.Background())
 		if err != nil {
 			return
@@ -68,6 +63,14 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 
 		var msg ClientMsg
 		if err := json.Unmarshal(data, &msg); err != nil {
+			continue
+		}
+
+		// =========================
+		// INIT CLIENT
+		// =========================
+		if msg.Type == "init_client" {
+			h.connToID[conn] = msg.ClientID
 			continue
 		}
 
@@ -90,7 +93,7 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 		}
 
 		// =========================
-		// SET PIXEL (COOLDOWN CLEAN)
+		// SET PIXEL
 		// =========================
 		if msg.Type == "set_pixel" {
 
