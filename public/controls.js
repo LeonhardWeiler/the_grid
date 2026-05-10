@@ -85,7 +85,7 @@ export function setupZoomControls() {
     }
 
     camera.tzoom =
-      Math.max(0.01, Math.min(20, camera.tzoom))
+      Math.max(0.08, Math.min(2, camera.tzoom))
 
   }, { passive: false })
 }

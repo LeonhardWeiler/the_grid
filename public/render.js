@@ -78,26 +78,25 @@ function drawPixels() {
 
     const [x, y] = key.split(":").map(Number)
 
+    const size =
+      BASE_PIXEL_SIZE * camera.zoom
+
     const screenX =
       (x - camera.x) *
-      BASE_PIXEL_SIZE *
-      camera.zoom +
+      size +
       canvas.width / 2
 
     const screenY =
       (y - camera.y) *
-      BASE_PIXEL_SIZE *
-      camera.zoom +
+      size +
       canvas.height / 2
 
-    const size =
-      BASE_PIXEL_SIZE * camera.zoom
-
+    // nur skippen wenn komplett außerhalb
     if (
-      screenX < -50 ||
-      screenY < -50 ||
-      screenX > canvas.width + 50 ||
-      screenY > canvas.height + 50
+      screenX + size < 0 ||
+      screenY + size < 0 ||
+      screenX > canvas.width ||
+      screenY > canvas.height
     ) continue
 
     ctx.fillStyle = color
