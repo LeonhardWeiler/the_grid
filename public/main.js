@@ -39,6 +39,11 @@ if (!clientId) {
 }
 
 // =========================
+// STATE (NEU)
+// =========================
+let selectedPixel = null
+
+// =========================
 // WS
 // =========================
 const ws = new WebSocket("ws://localhost:4000/ws")
@@ -67,12 +72,10 @@ ws.onmessage = (e) => {
 
     case "pixel_update": {
       const key = `${msg.x}:${msg.y}`
-
       pixels.set(key, msg.color)
 
       setNeedsRedraw(true)
       drawAll()
-
       break
     }
 
@@ -86,7 +89,6 @@ ws.onmessage = (e) => {
 
       setNeedsRedraw(true)
       drawAll()
-
       break
     }
 
@@ -98,11 +100,9 @@ ws.onmessage = (e) => {
 }
 
 // =========================
-// CLICK
+// CLICK (NEU LOGIK)
 // =========================
 canvas.addEventListener("click", (e) => {
-
-  if (Date.now() < cooldownEndRef.value) return
 
   const worldX = Math.floor(
     (e.clientX - canvas.width / 2) /
@@ -121,13 +121,58 @@ canvas.addEventListener("click", (e) => {
     worldY < 0 || worldY >= GRID_SIZE
   ) return
 
+  selectedPixel = { x: worldX, y: worldY }
+
+  updateButtonUI()
+})
+
+cooldownEl.addEventListener("click", () => {
+
+  // cooldown aktiv → nix tun
+  if (Date.now() < cooldownEndRef.value) return
+
+  // kein pixel ausgewählt
+  if (!selectedPixel) return
+
   ws.send(JSON.stringify({
     type: "set_pixel",
-    x: worldX,
-    y: worldY,
+    x: selectedPixel.x,
+    y: selectedPixel.y,
     color: "#ff0000"
   }))
+
+  selectedPixel = null
+  updateButtonUI()
 })
+
+function updateButtonUI() {
+
+  const now = Date.now()
+
+  // cooldown aktiv
+  if (now < cooldownEndRef.value) {
+
+    const remaining = cooldownEndRef.value - now
+
+    cooldownEl.textContent =
+      `Cooldown: ${(remaining / 1000).toFixed(1)}s`
+
+    cooldownEl.classList.add("disabled")
+    return
+  }
+
+  cooldownEl.classList.remove("disabled")
+
+  // kein pixel
+  if (!selectedPixel) {
+    cooldownEl.textContent = "Select Pixel"
+    return
+  }
+
+  // pixel selected
+  cooldownEl.textContent =
+    `Click to accept (${selectedPixel.x}/${selectedPixel.y})`
+}
 
 // =========================
 // CONTROLS
@@ -155,3 +200,5 @@ function updateCamera() {
 }
 
 updateCamera()
+handleCooldown(msg)
+updateButtonUI()

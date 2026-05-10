@@ -12,27 +12,18 @@ export function handleCooldown(msg) {
 }
 
 function startCooldownUI() {
-
   if (cooldownRunning) return
-
   cooldownRunning = true
-
   requestAnimationFrame(updateCooldownUI)
 }
 
 function updateCooldownUI() {
 
-  const remaining =
-    cooldownEndRef.value - Date.now()
+  const remaining = cooldownEndRef.value - Date.now()
 
   if (remaining <= 0) {
-
     cooldownEndRef.value = 0
-
-    cooldownEl.textContent = "Ready"
-
     cooldownRunning = false
-
     return
   }
 
