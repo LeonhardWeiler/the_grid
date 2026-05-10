@@ -157,7 +157,8 @@ canvas.addEventListener("click", (e) => {
 // =========================
 // CONFIRM BUTTON
 // =========================
-cooldownEl.addEventListener("click", () => {
+
+function confirmPixel() {
 
   if (!selectedPixel) return
 
@@ -174,19 +175,36 @@ cooldownEl.addEventListener("click", () => {
 
   selectedPixel = null
   updateButtonUI()
+}
+
+cooldownEl.addEventListener("click", () => {
+  confirmPixel()
+})
+
+window.addEventListener("keydown", (e) => {
+
+  if (e.code !== "Space") return
+
+  // verhindert Scrollen
+  e.preventDefault()
+
+  confirmPixel()
 })
 
 // =========================
 // UI
 // =========================
-window.addEventListener("cooldown_update", updateButtonUI)
 
 function updateButtonUI() {
 
   const now = Date.now()
+  const remaining = cooldownEndRef.value - now
 
-  if (now < cooldownEndRef.value) {
-    const remaining = cooldownEndRef.value - now
+  // =========================
+  // COOLDOWN ACTIVE
+  // =========================
+  if (remaining > 0) {
+
     cooldownEl.textContent =
       `Cooldown: ${(remaining / 1000).toFixed(1)}s`
 
@@ -194,15 +212,17 @@ function updateButtonUI() {
     return
   }
 
+  // =========================
+  // READY STATE
+  // =========================
   cooldownEl.classList.remove("disabled")
 
   if (!selectedPixel) {
     cooldownEl.textContent = "Select Pixel"
-    return
+  } else {
+    cooldownEl.textContent =
+      `Click to accept (${selectedPixel.x}/${selectedPixel.y})`
   }
-
-  cooldownEl.textContent =
-    `Click to accept (${selectedPixel.x}/${selectedPixel.y})`
 }
 
 // =========================
@@ -231,3 +251,10 @@ function updateCamera() {
 }
 
 updateCamera()
+
+function uiLoop() {
+  updateButtonUI()
+  requestAnimationFrame(uiLoop)
+}
+
+uiLoop()
