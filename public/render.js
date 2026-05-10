@@ -2,7 +2,8 @@ import { canvas, ctx } from "./dom.js"
 
 import {
   camera,
-  BASE_PIXEL_SIZE
+  BASE_PIXEL_SIZE,
+  GRID_SIZE
 } from "./camera.js"
 
 export const pixels = new Map()
@@ -18,32 +19,62 @@ export function setNeedsRedraw(v) {
 // =========================
 function drawGrid() {
 
-  const step = BASE_PIXEL_SIZE * camera.zoom
+  const baseStep =
+    BASE_PIXEL_SIZE * camera.zoom
 
-  // zu weit rausgezoomt
-  if (step < 8) return
+  // dynamischer Abstand
+  let cellStep = 1
+  let step = baseStep
 
-  ctx.strokeStyle = "rgba(255,255,255,1)"
+  while (step < 12) {
+    cellStep *= 2
+    step = baseStep * cellStep
+  }
+
+  ctx.strokeStyle = "rgba(255,255,255,0.15)"
   ctx.lineWidth = 1
 
+  const visibleWidth =
+    canvas.width / baseStep
+
+  const visibleHeight =
+    canvas.height / baseStep
+
   const startWorldX =
-    Math.floor(camera.x - canvas.width / 2 / step)
+    Math.max(
+      0,
+      Math.floor(camera.x - visibleWidth / 2)
+    )
 
   const endWorldX =
-    Math.ceil(camera.x + canvas.width / 2 / step)
+    Math.min(
+      GRID_SIZE,
+      Math.ceil(camera.x + visibleWidth / 2)
+    )
 
   const startWorldY =
-    Math.floor(camera.y - canvas.height / 2 / step)
+    Math.max(
+      0,
+      Math.floor(camera.y - visibleHeight / 2)
+    )
 
   const endWorldY =
-    Math.ceil(camera.y + canvas.height / 2 / step)
+    Math.min(
+      GRID_SIZE,
+      Math.ceil(camera.y + visibleHeight / 2)
+    )
 
-  // verticale linien
-  for (let x = startWorldX; x <= endWorldX; x++) {
+  // vertikale Linien
+  for (
+    let x =
+      Math.floor(startWorldX / cellStep) * cellStep;
+    x <= endWorldX;
+    x += cellStep
+  ) {
 
     const screenX =
       Math.round(
-        (x - camera.x) * step +
+        (x - camera.x) * baseStep +
         canvas.width / 2
       ) + 0.5
 
@@ -53,12 +84,17 @@ function drawGrid() {
     ctx.stroke()
   }
 
-  // horizontale linien
-  for (let y = startWorldY; y <= endWorldY; y++) {
+  // horizontale Linien
+  for (
+    let y =
+      Math.floor(startWorldY / cellStep) * cellStep;
+    y <= endWorldY;
+    y += cellStep
+  ) {
 
     const screenY =
       Math.round(
-        (y - camera.y) * step +
+        (y - camera.y) * baseStep +
         canvas.height / 2
       ) + 0.5
 

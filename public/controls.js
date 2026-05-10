@@ -41,14 +41,16 @@ export function setupPanControls() {
     const dx = e.clientX - last.x
     const dy = e.clientY - last.y
 
-    camera.tx -= dx / (BASE_PIXEL_SIZE * camera.zoom)
-    camera.ty -= dy / (BASE_PIXEL_SIZE * camera.zoom)
+    camera.tx -= dx / (BASE_PIXEL_SIZE * camera.tzoom)
+    camera.ty -= dy / (BASE_PIXEL_SIZE * camera.tzoom)
 
-    camera.x =
-      Math.max(0, Math.min(GRID_SIZE, camera.x))
+    clampCamera();
 
-    camera.y =
-      Math.max(0, Math.min(GRID_SIZE, camera.y))
+    camera.tx =
+      Math.max(0, Math.min(GRID_SIZE, camera.tx))
+
+    camera.ty =
+      Math.max(0, Math.min(GRID_SIZE, camera.ty))
 
     last.x = e.clientX
     last.y = e.clientY
@@ -65,6 +67,28 @@ export function setupPanControls() {
     setNeedsRedraw(true)
     drawAll()
   })
+}
+
+function clampCamera() {
+
+  const visibleWidth =
+    canvas.width / (BASE_PIXEL_SIZE * camera.zoom)
+
+  const visibleHeight =
+    canvas.height / (BASE_PIXEL_SIZE * camera.zoom)
+
+  const halfW = visibleWidth / 2
+  const halfH = visibleHeight / 2
+
+  camera.tx = Math.max(
+    halfW,
+    Math.min(GRID_SIZE - halfW, camera.tx)
+  )
+
+  camera.ty = Math.max(
+    halfH,
+    Math.min(GRID_SIZE - halfH, camera.ty)
+  )
 }
 
 // =========================
@@ -86,6 +110,8 @@ export function setupZoomControls() {
 
     camera.tzoom =
       Math.max(0.08, Math.min(2, camera.tzoom))
+
+    clampCamera();
 
   }, { passive: false })
 }
