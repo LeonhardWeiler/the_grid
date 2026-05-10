@@ -39,9 +39,10 @@ if (!clientId) {
 }
 
 // =========================
-// STATE (NEU)
+// STATE
 // =========================
 let selectedPixel = null
+let hoverPixel = null
 
 // =========================
 // WS
@@ -51,7 +52,7 @@ const ws = new WebSocket("ws://localhost:4000/ws")
 ws.onopen = () => {
   ws.send(JSON.stringify({
     type: "init_client",
-    clientId: clientId
+    clientId
   }))
 }
 
@@ -64,9 +65,8 @@ ws.onmessage = (e) => {
       for (const key in msg.pixels) {
         pixels.set(key, msg.pixels[key])
       }
-
       setNeedsRedraw(true)
-      drawAll()
+      drawAll(hoverPixel, selectedPixel)
       break
     }
 
@@ -75,7 +75,7 @@ ws.onmessage = (e) => {
       pixels.set(key, msg.color)
 
       setNeedsRedraw(true)
-      drawAll()
+      drawAll(hoverPixel, selectedPixel)
       break
     }
 
@@ -88,7 +88,7 @@ ws.onmessage = (e) => {
       }
 
       setNeedsRedraw(true)
-      drawAll()
+      drawAll(hoverPixel, selectedPixel)
       break
     }
 
@@ -100,7 +100,35 @@ ws.onmessage = (e) => {
 }
 
 // =========================
-// CLICK (NEU LOGIK)
+// MOUSE MOVE (HOVER PREVIEW)
+// =========================
+canvas.addEventListener("mousemove", (e) => {
+
+  const worldX = Math.floor(
+    (e.clientX - canvas.width / 2) /
+    (BASE_PIXEL_SIZE * camera.zoom) +
+    camera.x
+  )
+
+  const worldY = Math.floor(
+    (e.clientY - canvas.height / 2) /
+    (BASE_PIXEL_SIZE * camera.zoom) +
+    camera.y
+  )
+
+  if (
+    worldX < 0 || worldX >= GRID_SIZE ||
+    worldY < 0 || worldY >= GRID_SIZE
+  ) return
+
+  hoverPixel = { x: worldX, y: worldY }
+
+  setNeedsRedraw(true)
+  drawAll(hoverPixel, selectedPixel)
+})
+
+// =========================
+// CLICK (SELECT)
 // =========================
 canvas.addEventListener("click", (e) => {
 
@@ -126,13 +154,16 @@ canvas.addEventListener("click", (e) => {
   updateButtonUI()
 })
 
+// =========================
+// CONFIRM BUTTON
+// =========================
 cooldownEl.addEventListener("click", () => {
 
-  // cooldown aktiv → nix tun
-  if (Date.now() < cooldownEndRef.value) return
-
-  // kein pixel ausgewählt
   if (!selectedPixel) return
+
+  const now = Date.now()
+
+  if (now < cooldownEndRef.value) return
 
   ws.send(JSON.stringify({
     type: "set_pixel",
@@ -145,15 +176,17 @@ cooldownEl.addEventListener("click", () => {
   updateButtonUI()
 })
 
+// =========================
+// UI
+// =========================
+window.addEventListener("cooldown_update", updateButtonUI)
+
 function updateButtonUI() {
 
   const now = Date.now()
 
-  // cooldown aktiv
   if (now < cooldownEndRef.value) {
-
     const remaining = cooldownEndRef.value - now
-
     cooldownEl.textContent =
       `Cooldown: ${(remaining / 1000).toFixed(1)}s`
 
@@ -163,13 +196,11 @@ function updateButtonUI() {
 
   cooldownEl.classList.remove("disabled")
 
-  // kein pixel
   if (!selectedPixel) {
     cooldownEl.textContent = "Select Pixel"
     return
   }
 
-  // pixel selected
   cooldownEl.textContent =
     `Click to accept (${selectedPixel.x}/${selectedPixel.y})`
 }
@@ -184,7 +215,7 @@ setupZoomControls()
 // INIT
 // =========================
 fitToScreen()
-drawAll()
+drawAll(null, null)
 
 function updateCamera() {
 
@@ -194,11 +225,9 @@ function updateCamera() {
   camera.zoom += (camera.tzoom - camera.zoom) * 0.15
 
   setNeedsRedraw(true)
-  drawAll()
+  drawAll(hoverPixel, selectedPixel)
 
   requestAnimationFrame(updateCamera)
 }
 
 updateCamera()
-handleCooldown(msg)
-updateButtonUI()

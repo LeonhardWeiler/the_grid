@@ -9,6 +9,9 @@ let cooldownRunning = false
 export function handleCooldown(msg) {
   cooldownEndRef.value = msg.end
   startCooldownUI()
+
+  // 🔥 UI sofort aktualisieren
+  window.dispatchEvent(new Event("cooldown_update"))
 }
 
 function startCooldownUI() {

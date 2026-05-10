@@ -12,8 +12,9 @@ import {
 } from "./camera.js"
 
 import {
+  pixels,
   drawAll,
-  setNeedsRedraw
+  setNeedsRedraw,
 } from "./render.js"
 
 // =========================
@@ -62,6 +63,27 @@ export function setupPanControls() {
 
     setNeedsRedraw(true)
     drawAll()
+  })
+
+  canvas.addEventListener("mousemove", (e) => {
+
+    const worldX = Math.floor(
+      (e.clientX - canvas.width / 2) /
+      (BASE_PIXEL_SIZE * camera.zoom) +
+      camera.x
+    )
+
+    const worldY = Math.floor(
+      (e.clientY - canvas.height / 2) /
+      (BASE_PIXEL_SIZE * camera.zoom) +
+      camera.y
+    )
+
+    if (
+      worldX < 0 || worldX >= GRID_SIZE ||
+      worldY < 0 || worldY >= GRID_SIZE
+    ) return
+
   })
 
   canvas.addEventListener("mousemove", (e) => {

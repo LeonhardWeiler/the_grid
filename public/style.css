@@ -26,8 +26,7 @@ canvas:active {
 
   font-family: sans-serif;
   font-size: 14px;
-
-  border-radius: 8px;
+  border: 1px solid white;
 
   z-index: 1000;
 
