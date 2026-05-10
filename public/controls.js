@@ -1,4 +1,9 @@
-import { canvas } from "./dom.js"
+import {
+  canvas,
+  ctx,
+  cooldownEl,
+  coordsEl
+} from "./dom.js"
 
 import {
   camera,
@@ -57,6 +62,31 @@ export function setupPanControls() {
 
     setNeedsRedraw(true)
     drawAll()
+  })
+
+  canvas.addEventListener("mousemove", (e) => {
+
+    const worldX = Math.floor(
+      (e.clientX - canvas.width / 2) /
+      (BASE_PIXEL_SIZE * camera.zoom) +
+      camera.x
+    )
+
+    const worldY = Math.floor(
+      (e.clientY - canvas.height / 2) /
+      (BASE_PIXEL_SIZE * camera.zoom) +
+      camera.y
+    )
+
+    // Mittelpunkt auf 0/0 verschieben
+    const centeredX =
+      worldX - Math.floor(GRID_SIZE / 2)
+
+    const centeredY =
+      -(worldY - Math.floor(GRID_SIZE / 2))
+
+    coordsEl.textContent =
+      `${centeredX} / ${centeredY}`
   })
 
   window.addEventListener("resize", () => {

@@ -1,4 +1,10 @@
-import { canvas, ctx, cooldownEl } from "./dom.js"
+import {
+  canvas,
+  ctx,
+  cooldownEl,
+  coordsEl
+} from "./dom.js"
+
 import {
   camera,
   BASE_PIXEL_SIZE,
