@@ -53,6 +53,7 @@ canvas:active {
   right: 16px;
 
   background: rgba(0,0,0,0.7);
+  border: 1px solid white;
   color: white;
 
   padding: 8px 12px;
