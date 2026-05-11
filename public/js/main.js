@@ -1,6 +1,9 @@
 import { canvas, cooldownEl } from "./dom.js"
-
 import { state } from "./state.js"
+
+import {
+  setupPalette
+} from "./ui/palette.js"
 
 import {
   GRID_SIZE,
@@ -74,7 +77,7 @@ function confirmPixel() {
     type: "set_pixel",
     x: state.selectedPixel.x,
     y: state.selectedPixel.y,
-    color: "#ff0000"
+    color: state.selectedColor
   }))
 
   state.selectedPixel = null
@@ -97,6 +100,7 @@ window.addEventListener(
 )
 
 setupControls()
+setupPalette()
 fitToScreen()
 
 function loop() {
