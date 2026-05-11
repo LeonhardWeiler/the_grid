@@ -1,0 +1,116 @@
+import { canvas, cooldownEl } from "./dom.js"
+
+import { state } from "./state.js"
+
+import {
+  GRID_SIZE,
+  fitToScreen,
+  camera
+} from "./camera/camera.js"
+
+import {
+  setupControls
+} from "./camera/controls.js"
+
+import {
+  render,
+  requestRender
+} from "./render/render.js"
+
+import {
+  updateButtonUI
+} from "./ui/button.js"
+
+import {
+  isCooldownActive
+} from "./ui/cooldown.js"
+
+import {
+  screenToWorld
+} from "./utils/coords.js"
+
+import { createWS } from "./ws.js"
+
+let clientId =
+  localStorage.getItem("clientId")
+
+if (!clientId) {
+  clientId = crypto.randomUUID()
+  localStorage.setItem(
+    "clientId",
+    clientId
+  )
+}
+
+const ws = createWS(clientId)
+
+canvas.addEventListener("click", (e) => {
+  const world =
+    screenToWorld(
+      e.clientX,
+      e.clientY
+    )
+
+  if (
+    world.x < 0 ||
+    world.x >= GRID_SIZE ||
+    world.y < 0 ||
+    world.y >= GRID_SIZE
+  ) return
+
+  state.selectedPixel = world
+  updateButtonUI()
+  requestRender()
+})
+
+function confirmPixel() {
+  if (!state.selectedPixel) return
+  if (isCooldownActive()) return
+
+  ws.send(JSON.stringify({
+    type: "set_pixel",
+    x: state.selectedPixel.x,
+    y: state.selectedPixel.y,
+    color: "#ff0000"
+  }))
+
+  state.selectedPixel = null
+  updateButtonUI()
+  requestRender()
+}
+
+cooldownEl.addEventListener(
+  "click",
+  confirmPixel
+)
+
+window.addEventListener(
+  "keydown",
+  (e) => {
+    if (e.code !== "Space") return
+    e.preventDefault()
+    confirmPixel()
+  }
+)
+
+setupControls()
+fitToScreen()
+
+function loop() {
+
+  camera.x +=
+    (camera.tx - camera.x) * 0.15
+
+  camera.y +=
+    (camera.ty - camera.y) * 0.15
+
+  camera.zoom +=
+    (camera.tzoom - camera.zoom) * 0.15
+
+  requestRender()
+  render()
+  updateButtonUI()
+  requestAnimationFrame(loop)
+}
+
+loop()

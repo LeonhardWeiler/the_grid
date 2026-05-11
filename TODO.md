@@ -2,48 +2,6 @@ Du hast schon ziemlich viel von einem funktionierenden **r/place-artigen System*
 
 Ich sortiere dir das sinnvoll nach Priorität:
 
----
-
-# 🔥 1. Kritisch fehlend: Rate Limiting (Cooldown)
-
-Aktuell kann jeder Client **unendlich Pixel spammen** → das killt dir sofort die Stabilität und macht das “Spiel” kaputt.
-
-### Was du brauchst:
-
-* Pro User / Connection:
-
-  * Cooldown (z. B. 1 Pixel / 1–5 Sekunden)
-  * oder Token Bucket
-
-### Minimal-Variante:
-
-Im Hub:
-
-* `map[*websocket.Conn]time.Time` → last action
-* vor `Set()` prüfen
-
-👉 Ohne das ist dein Projekt kein “Grid”, sondern ein DoS Simulator 😄
-
----
-
-# 🧠 2. User-Identität (auch simpel halten)
-
-Du hast aktuell **keine Nutzer-Unterscheidung**.
-
-Du brauchst mindestens eins:
-
-* random Client-ID beim Connect
-* oder IP-basiert (nicht ideal)
-* später: login optional
-
-### Warum wichtig?
-
-* Cooldowns pro User
-* Abuse prevention
-* später: Pixel history / ownership
-
----
-
 # ⚡ 3. Event-Log wird langsam (wichtig!)
 
 Du speicherst:

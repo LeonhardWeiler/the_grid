@@ -143,3 +143,4 @@ The project focuses on:
 * Binary packet protocol
 * Redis PubSub scaling
 * Multi-server support
+* Custom Maps and Carinthia specific Map
