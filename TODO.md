@@ -195,3 +195,364 @@ Wenn du willst, kann ich dir als nächsten Schritt direkt:
 
 Sag einfach, welcher Teil zuerst.
 
+
+Jetzt bist du an dem Punkt, wo das Projekt bereits „echt“ wirkt.
+Die nächsten Schritte sollten deshalb möglichst viel Nutzen bringen, ohne die Architektur wieder chaotisch zu machen.
+
+Die beste Reihenfolge wäre jetzt:
+
+---
+
+# 1. Canvas Persistence
+
+Das fehlt aktuell am meisten.
+
+Momentan:
+
+* Server restart
+  = alles weg.
+
+Das solltest du als Nächstes machen.
+
+---
+
+## Minimal Version
+
+Beim Server:
+
+* alle X Sekunden speichern
+* beim Start laden
+
+Zum Beispiel:
+
+```text id="zh2h0j"
+canvas.json
+```
+
+---
+
+## Warum wichtig?
+
+Das ist der erste Schritt von:
+
+* Demo → echtes Projekt
+
+Ohne Persistence:
+
+* kein langfristiges Canvas
+* keine Community Builds
+* kein echtes Multiplayer Gefühl
+
+---
+
+# 2. Color Validation am Server
+
+Aktuell kann jeder senden:
+
+```json id="a01yfu"
+{
+  "color":"hacked"
+}
+```
+
+oder riesige Strings.
+
+Server MUSS validieren:
+
+```go id="ftq2i0"
+allowed := map[string]bool{
+  "#ff0000": true,
+  "#00ff00": true,
+}
+```
+
+Sonst:
+
+* Exploits
+* kaputte Clients
+* Memory Abuse
+
+---
+
+# 3. Chunk System
+
+Das wird dein wichtigster Performance-Schritt.
+
+Aktuell:
+
+* jedes Pixel wird jedes Frame iteriert.
+
+Später langsam.
+
+---
+
+## Ziel
+
+Canvas in:
+
+* 32x32
+* oder 64x64
+
+Chunks aufteilen.
+
+Dann:
+
+* nur sichtbare Chunks rendern
+* viel schneller
+
+---
+
+# 4. Server-side Rate Limiting verbessern
+
+Aktuell wahrscheinlich:
+
+* pro connection
+
+Besser:
+
+* pro clientId
+* optional IP
+
+Sonst:
+
+* reconnect spam
+* bypass
+
+---
+
+# 5. Mobile Support
+
+Das fehlt wahrscheinlich komplett.
+
+Du brauchst:
+
+* touch pan
+* pinch zoom
+* tap select
+
+Das wäre ein großer sichtbarer Fortschritt.
+
+---
+
+# 6. Minimap
+
+Sehr gutes nächstes UI Feature.
+
+Vor allem bei:
+
+* 1000x1000
+
+---
+
+## Einfachste Version
+
+Kleine Canvas:
+
+* unten rechts
+* komplette Welt
+
+Mit:
+
+* Viewport Rectangle
+
+Das macht das Projekt SOFORT professioneller.
+
+---
+
+# 7. Better Pixel Placement UX
+
+Aktuell:
+
+* select
+* confirm
+
+Das ist sicher, aber langsam.
+
+---
+
+## Später möglich
+
+Optionen:
+
+* sofort platzieren
+* confirm mode optional
+* right click cancel
+* color preview
+
+---
+
+# 8. Heatmap / Activity
+
+Sehr cool für Multiplayer.
+
+Zeigt:
+
+* wo zuletzt gebaut wurde.
+
+---
+
+# 9. Pixel Animation
+
+Sehr kleiner Effekt:
+
+* neue Pixel kurz aufleuchten/faden.
+
+Wirkt sofort hochwertiger.
+
+---
+
+# 10. Binary Protocol
+
+Das wird später extrem wichtig.
+
+JSON ist teuer.
+
+---
+
+## Derzeit
+
+```json id="0iq1xb"
+{
+  "x":123,
+  "y":456,
+  "color":"#ff0000"
+}
+```
+
+Später:
+
+```text id="wll1t8"
+Uint16 x
+Uint16 y
+Uint8 color
+```
+
+Massiv schneller.
+
+---
+
+# 11. Snapshot Compression
+
+Später:
+
+* zstd
+* gzip
+* binary snapshots
+
+---
+
+# 12. Server Architecture
+
+Später:
+
+* Redis PubSub
+* multiple Go nodes
+
+Noch nicht nötig.
+
+---
+
+# 13. User Features
+
+Später:
+
+* Username
+* Account
+* Statistics
+* Placed Pixels
+* Leaderboard
+* Factions
+
+---
+
+# 14. Moderation
+
+Später nötig:
+
+* rollback
+* undo
+* bans
+* area clear
+
+---
+
+# 15. Cool Features
+
+Sehr gute spätere Ideen:
+
+---
+
+## Timelapse Replay
+
+ALLES aufzeichnen.
+
+Dann:
+
+* replay
+* export
+* video
+
+Sehr cool.
+
+---
+
+## Territory Overlay
+
+Zeigt:
+
+* wer wo aktiv ist.
+
+---
+
+## Live User Cursors
+
+Sieht extrem multiplayer aus.
+
+---
+
+# Was ich JETZT wirklich machen würde
+
+## Reihenfolge
+
+### Sofort
+
+1. Persistence
+2. Server Color Validation
+3. Better Rate Limiting
+
+---
+
+### Danach
+
+4. Chunk Rendering
+5. Minimap
+6. Mobile Support
+
+---
+
+### Danach
+
+7. Binary Protocol
+8. Replay System
+9. Animations
+
+---
+
+# Das Wichtigste aktuell
+
+## Persistence
+
+Das ist der größte fehlende Baustein.
+
+Weil:
+
+* alles andere baut darauf auf.
+
+Ohne Persistence:
+
+* fühlt sich das Canvas temporär an.
+
+Mit Persistence:
+
+* fühlt es sich wie eine echte Welt an.
+

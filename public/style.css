@@ -127,3 +127,23 @@ canvas:active {
 
   transform: scale(1.12);
 }
+
+#minimap {
+  position: fixed;
+
+  top: 16px;
+  left: 16px;
+
+  width: 180px;
+  height: 180px;
+
+  background: rgba(0,0,0,0.72);
+
+  border: 1px solid white;
+
+  image-rendering: pixelated;
+
+  z-index: 1000;
+
+  backdrop-filter: blur(6px);
+}

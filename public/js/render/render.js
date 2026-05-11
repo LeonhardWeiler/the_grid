@@ -1,5 +1,5 @@
 import { canvas, ctx } from "../dom.js"
-
+import { drawMinimap } from "./minimap.js"
 import { drawGrid } from "./grid.js"
 import { drawPixels } from "./pixels.js"
 import { drawPreview } from "./preview.js"
@@ -28,6 +28,7 @@ export function render() {
   drawGrid()
   drawPixels()
   drawPreview()
+  drawMinimap()
 
   needsRender = false
 }
