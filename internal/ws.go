@@ -17,7 +17,7 @@ type ClientMsg struct {
 	Y           int    `json:"y"`
 	Color       string `json:"color"`
 	LastVersion int    `json:"lastVersion"`
-	ClientID 		string `json:"clientId"` // 🔥 NEW
+	ClientID    string `json:"clientId"`
 }
 
 func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
@@ -27,34 +27,40 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	conn.SetReadLimit(MaxMessageSize)
+
 	h.Add(conn)
 
 	defer func() {
-		id := h.connToID[conn]
-
-		delete(h.lastAction, id)
 		delete(h.connToID, conn)
 
 		h.Remove(conn)
-		conn.Close(websocket.StatusNormalClosure, "")
+
+		_ = conn.Close(
+			websocket.StatusNormalClosure,
+			"",
+		)
 	}()
 
-	// =========================
-	// INIT
-	// =========================
 	snap, version := h.Store.Snapshot()
 
-	init, _ := json.Marshal(map[string]any{
+	initMsg, err := json.Marshal(map[string]any{
 		"type":    "init",
 		"pixels":  snap,
 		"version": version,
 	})
+	if err != nil {
+		return
+	}
 
-	_ = conn.Write(context.Background(), websocket.MessageText, init)
+	if err := conn.Write(
+		context.Background(),
+		websocket.MessageText,
+		initMsg,
+	); err != nil {
+		return
+	}
 
-	// =========================
-	// LOOP
-	// =========================
 	for {
 		_, data, err := conn.Read(context.Background())
 		if err != nil {
@@ -62,76 +68,108 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 		}
 
 		var msg ClientMsg
+
 		if err := json.Unmarshal(data, &msg); err != nil {
 			continue
 		}
 
-		// =========================
-		// INIT CLIENT
-		// =========================
-		if msg.Type == "init_client" {
-			h.connToID[conn] = msg.ClientID
-			continue
-		}
+		switch msg.Type {
 
-		// =========================
-		// SYNC
-		// =========================
-		if msg.Type == "sync" {
+		case "init_client":
+			if !ValidClientID(msg.ClientID) {
+				return
+			}
+
+			h.connToID[conn] = msg.ClientID
+
+		case "sync":
 			events := h.Store.GetSince(msg.LastVersion)
+
 			if events == nil {
 				events = []Event{}
 			}
 
-			out, _ := json.Marshal(map[string]any{
+			out, err := json.Marshal(map[string]any{
 				"type":   "sync",
 				"events": events,
 			})
+			if err != nil {
+				continue
+			}
 
-			_ = conn.Write(context.Background(), websocket.MessageText, out)
-			continue
-		}
+			_ = conn.Write(
+				context.Background(),
+				websocket.MessageText,
+				out,
+			)
 
-		// =========================
-		// SET PIXEL
-		// =========================
-		if msg.Type == "set_pixel" {
-
+		case "set_pixel":
 			id := h.connToID[conn]
 
+			if id == "" {
+				continue
+			}
+
+			if !ValidCoords(msg.X, msg.Y) {
+				continue
+			}
+
+			if !ValidColor(msg.Color) {
+				continue
+			}
+
 			now := time.Now().UnixMilli()
-			cooldown := int64(5000)
 
 			last := h.lastAction[id]
 
-			if now-last < cooldown {
+			if now-last < CooldownMs {
 				continue
 			}
 
 			h.lastAction[id] = now
 
-			key := fmt.Sprintf("%d:%d", msg.X, msg.Y)
+			key := fmt.Sprintf(
+				"%d:%d",
+				msg.X,
+				msg.Y,
+			)
 
-			ev := h.Store.Set(key, msg.X, msg.Y, msg.Color)
+			ev := h.Store.Set(
+				key,
+				msg.X,
+				msg.Y,
+				msg.Color,
+			)
 
-			out, _ := json.Marshal(map[string]any{
+			out, err := json.Marshal(map[string]any{
 				"type":    "pixel_update",
 				"version": ev.Version,
 				"x":       ev.X,
 				"y":       ev.Y,
 				"color":   ev.Color,
 			})
+			if err != nil {
+				continue
+			}
 
 			h.Broadcast(out)
 
-			end := now + cooldown
-
-			cd, _ := json.Marshal(map[string]any{
+			cd, err := json.Marshal(map[string]any{
 				"type": "cooldown",
-				"end":  end,
+				"end":  now + CooldownMs,
 			})
+			if err != nil {
+				continue
+			}
 
-			_ = conn.Write(context.Background(), websocket.MessageText, cd)
+			_ = conn.Write(
+				context.Background(),
+				websocket.MessageText,
+				cd,
+			)
+
+		default:
+			continue
 		}
 	}
 }
