@@ -1,10 +1,15 @@
 import { cooldownEl } from "../dom.js"
+import { GRID_SIZE } from "../camera/camera.js"
+import { state } from "../state.js"
+
+import {
+  toCenteredCoords
+} from "../utils/gridCoords.js"
 
 import {
   getCooldownRemaining
 } from "./cooldown.js"
 
-import { state } from "../state.js"
 
 export function updateButtonUI() {
 
@@ -28,6 +33,11 @@ export function updateButtonUI() {
     return
   }
 
-  cooldownEl.textContent =
-    `Click to accept (${state.selectedPixel.x}/${state.selectedPixel.y})`
+  const centered =
+    toCenteredCoords(
+      state.selectedPixel.x,
+      state.selectedPixel.y
+    )
+
+  cooldownEl.textContent = `Click to accept (${centered.x} / ${centered.y})`
 }

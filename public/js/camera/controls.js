@@ -1,4 +1,5 @@
 import { canvas, coordsEl } from "../dom.js"
+import { toCenteredCoords } from "../utils/gridCoords.js"
 
 import {
   camera,
@@ -12,6 +13,7 @@ import { requestRender } from "../render/render.js"
 import { state } from "../state.js"
 
 let dragging = false
+let moved = false
 
 let last = {
   x: 0,
@@ -22,6 +24,8 @@ export function setupControls() {
 
   canvas.addEventListener("mousedown", (e) => {
     dragging = true
+    moved = false
+
     last.x = e.clientX
     last.y = e.clientY
   })
@@ -31,11 +35,13 @@ export function setupControls() {
   })
 
   window.addEventListener("mousemove", (e) => {
-
     if (dragging) {
-
       const dx = e.clientX - last.x
       const dy = e.clientY - last.y
+
+      if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
+        moved = true
+      }
 
       camera.tx -= dx / (BASE_PIXEL_SIZE * camera.tzoom)
       camera.ty -= dy / (BASE_PIXEL_SIZE * camera.tzoom)
@@ -56,18 +62,21 @@ export function setupControls() {
       world.x >= GRID_SIZE ||
       world.y < 0 ||
       world.y >= GRID_SIZE
-    ) return
+    ) {
+
+      if (state.hoverPixel !== null) {
+        state.hoverPixel = null
+        requestRender()
+      }
+
+      return
+    }
 
     state.hoverPixel = world
 
-    const centeredX =
-      world.x - Math.floor(GRID_SIZE / 2)
+    const centered = toCenteredCoords(world.x, world.y)
 
-    const centeredY =
-      -(world.y - Math.floor(GRID_SIZE / 2))
-
-    coordsEl.textContent =
-      `${centeredX} / ${centeredY}`
+    coordsEl.textContent = `${centered.x} / ${centered.y}`
 
     requestRender()
   })
@@ -98,4 +107,8 @@ export function setupControls() {
 
     requestRender()
   })
+}
+
+export function didDrag() {
+  return moved
 }

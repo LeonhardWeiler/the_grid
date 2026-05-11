@@ -9,7 +9,8 @@ import {
 } from "./camera/camera.js"
 
 import {
-  setupControls
+  setupControls,
+  didDrag
 } from "./camera/controls.js"
 
 import {
@@ -45,6 +46,8 @@ if (!clientId) {
 const ws = createWS(clientId)
 
 canvas.addEventListener("click", (e) => {
+  if (didDrag()) return
+
   const world =
     screenToWorld(
       e.clientX,
@@ -97,6 +100,9 @@ setupControls()
 fitToScreen()
 
 function loop() {
+  const oldX = camera.x
+  const oldY = camera.y
+  const oldZoom = camera.zoom
 
   camera.x +=
     (camera.tx - camera.x) * 0.15
@@ -107,7 +113,15 @@ function loop() {
   camera.zoom +=
     (camera.tzoom - camera.zoom) * 0.15
 
-  requestRender()
+  const moved =
+    Math.abs(oldX - camera.x) > 0.001 ||
+    Math.abs(oldY - camera.y) > 0.001 ||
+    Math.abs(oldZoom - camera.zoom) > 0.001
+
+  if (moved) {
+    requestRender()
+  }
+
   render()
   updateButtonUI()
   requestAnimationFrame(loop)
