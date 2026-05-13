@@ -20,12 +20,49 @@ type ClientMsg struct {
 }
 
 type Client struct {
-    conn *websocket.Conn
-    send chan []byte
+	conn *websocket.Conn
+	send chan []byte
 }
+
+type InitMsg struct {
+	Type    string      `json:"type"`
+	Pixels  any         `json:"pixels"`
+	Version int         `json:"version"`
+}
+
+type SyncMsg struct {
+	Type   string `json:"type"`
+	Events any    `json:"events"`
+}
+
+type PixelUpdateMsg struct {
+	Type    string `json:"type"`
+	Version int    `json:"version"`
+	X       int    `json:"x"`
+	Y       int    `json:"y"`
+	Color   string `json:"color"`
+}
+
+type CooldownMsg struct {
+	Type string `json:"type"`
+	End  int64  `json:"end"`
+}
+
+const (
+	MsgTypeInitClient  = "init_client"
+	MsgTypeSync        = "sync"
+	MsgTypeSetPixel    = "set_pixel"
+
+	MsgTypeInit        = "init"
+	MsgTypePixelUpdate = "pixel_update"
+	MsgTypeCooldown    = "cooldown"
+)
 
 func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 	conn, err := websocket.Accept(w, r, nil)
+	if err != nil {
+		return
+	}
 	client := h.Add(conn)
 	if client == nil {
 		return
@@ -39,26 +76,15 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 
 	snap, version := h.Store.Snapshot()
 
-	initMsg, err := json.Marshal(map[string]any{
-		"type":    "init",
-		"pixels":  snap,
-		"version": version,
-	})
-
-	if err != nil {
+	if err := handleInit(client, snap, version); err != nil {
 		return
 	}
 
-	select {
-	case client.send <- initMsg:
-	default:
-	// drop slow client
-	}
-
 	invalidCount := 0
+	ctx := context.Background()
 
 	for {
-		_, data, err := conn.Read(context.Background())
+		_, data, err := conn.Read(ctx)
 		if err != nil {
 			return
 		}
@@ -77,104 +103,107 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 
 		switch msg.Type {
 
-		case "init_client":
+		case MsgTypeInitClient:
 			if !ValidClientID(msg.ClientID) {
 				return
 			}
 
-			id := h.GetClientID(conn)
-			if id != "" {
+			if h.GetClientID(conn) != "" {
 				continue
 			}
 
 			h.SetClientID(conn, msg.ClientID)
 
-		case "sync":
-			if !ValidVersion(msg.LastVersion) {
-				continue
-			}
+		case MsgTypeSync:
+			handleSync(h, client, msg)
 
-			events := h.Store.GetSince(msg.LastVersion)
-
-			out, err := json.Marshal(map[string]any{
-				"type":   "sync",
-				"events": events,
-			})
-			if err != nil {
-				continue
-			}
-
-			select {
-			case client.send <- out:
-			default:
-			// drop slow client
-			}
-
-
-		case "set_pixel":
+		case MsgTypeSetPixel:
 			id := h.GetClientID(conn)
-
 			if id == "" {
 				continue
 			}
-
-			if !ValidCoords(msg.X, msg.Y) {
-				continue
-			}
-
-			if !ValidColor(msg.Color) {
-				continue
-			}
-
-			now := time.Now().UnixMilli()
-
-			if !h.UpdateCooldown(id, now, CooldownMs) {
-				continue
-			}
-
-			key := fmt.Sprintf(
-				"%d:%d",
-				msg.X,
-				msg.Y,
-				)
-
-			ev := h.Store.Set(
-				key,
-				msg.X,
-				msg.Y,
-				msg.Color,
-				)
-
-			out, err := json.Marshal(map[string]any{
-				"type":    "pixel_update",
-				"version": ev.Version,
-				"x":       ev.X,
-				"y":       ev.Y,
-				"color":   ev.Color,
-			})
-			if err != nil {
-				continue
-			}
-
-			h.Broadcast(out)
-
-			cd, err := json.Marshal(map[string]any{
-				"type": "cooldown",
-				"end":  now + CooldownMs,
-			})
-			if err != nil {
-				continue
-			}
-
-			select {
-			case client.send <- cd:
-			default:
-			// drop slow client
-			}
-
+			handleSetPixel(h, client, id, msg)
 
 		default:
 			continue
 		}
 	}
+}
+
+func handleInit(client *Client, snap any, version int) error {
+	init := InitMsg{
+		Type:    MsgTypeInit,
+		Pixels:  snap,
+		Version: version,
+	}
+
+	b, err := json.Marshal(init)
+	if err != nil {
+		return err
+	}
+
+	trySend(client.send, b)
+
+	return nil
+}
+
+func handleSync(h *Hub, client *Client, msg ClientMsg) {
+	if !ValidVersion(msg.LastVersion) {
+		return
+	}
+
+	events := h.Store.GetSince(msg.LastVersion)
+
+	out, err := json.Marshal(SyncMsg{
+		Type:   MsgTypeSync,
+		Events: events,
+	})
+	if err != nil {
+		return
+	}
+
+	trySend(client.send, out)
+}
+
+func handleSetPixel(h *Hub, client *Client, id string, msg ClientMsg) {
+	if id == "" {
+		return
+	}
+
+	if !ValidCoords(msg.X, msg.Y) || !ValidColor(msg.Color) {
+		return
+	}
+
+	now := time.Now().UnixMilli()
+
+	if !h.UpdateCooldown(id, now, CooldownMs) {
+		return
+	}
+
+	key := fmt.Sprintf("%d:%d", msg.X, msg.Y)
+
+	ev := h.Store.Set(key, msg.X, msg.Y, msg.Color)
+
+	out, err := json.Marshal(PixelUpdateMsg{
+		Type:    MsgTypePixelUpdate,
+		Version: ev.Version,
+		X:       ev.X,
+		Y:       ev.Y,
+		Color:   ev.Color,
+	})
+	if err != nil {
+		return
+	}
+
+	h.Broadcast(out)
+
+	cd, err := json.Marshal(CooldownMsg{
+		Type: MsgTypeCooldown,
+		End:  now + CooldownMs,
+	})
+	if err != nil {
+		return
+	}
+
+	trySend(client.send, cd)
 }

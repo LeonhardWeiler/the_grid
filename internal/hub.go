@@ -112,3 +112,10 @@ func (h *Hub) RemoveAll(conn *websocket.Conn) {
 		close(client.send)
 	}
 }
+
+func trySend(ch chan []byte, msg []byte) {
+    select {
+    case ch <- msg:
+    default:
+    }
+}
