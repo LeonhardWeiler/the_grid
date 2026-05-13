@@ -8,7 +8,7 @@ import (
 )
 
 type Hub struct {
-	mu sync.Mutex
+	mu sync.RWMutex
 
 	clients map[*websocket.Conn]*Client
 
@@ -16,6 +16,13 @@ type Hub struct {
 
 	lastAction map[string]int64
 	connToID   map[*websocket.Conn]string
+}
+
+type Client struct {
+	conn   *websocket.Conn
+	send   chan []byte
+	ctx    context.Context
+	cancel context.CancelFunc
 }
 
 func NewHub() *Hub {
@@ -28,9 +35,13 @@ func NewHub() *Hub {
 }
 
 func (h *Hub) Add(c *websocket.Conn) *Client {
+	ctx, cancel := context.WithCancel(context.Background())
+
 	client := &Client{
-		conn: c,
-		send: make(chan []byte, 32),
+		conn:   c,
+		send:   make(chan []byte, 32),
+		ctx:    ctx,
+		cancel: cancel,
 	}
 
 	h.mu.Lock()
@@ -38,10 +49,27 @@ func (h *Hub) Add(c *websocket.Conn) *Client {
 	h.mu.Unlock()
 
 	go func(cl *Client) {
-		defer cl.conn.Close(websocket.StatusNormalClosure, "")
+		defer cl.conn.Close(
+			websocket.StatusNormalClosure,
+			"",
+			)
 
-		for msg := range cl.send {
-			if err := cl.conn.Write(context.Background(), websocket.MessageText, msg); err != nil {
+		for {
+			select {
+			case msg, ok := <-cl.send:
+				if !ok {
+					return
+				}
+
+				if err := cl.conn.Write(
+					context.Background(),
+					websocket.MessageText,
+					msg,
+					); err != nil {
+					return
+				}
+
+			case <-cl.ctx.Done():
 				return
 			}
 		}
@@ -51,12 +79,12 @@ func (h *Hub) Add(c *websocket.Conn) *Client {
 }
 
 func (h *Hub) Broadcast(msg []byte) {
-	h.mu.Lock()
+	h.mu.RLock()
 	clients := make([]*Client, 0, len(h.clients))
 	for _, client := range h.clients {
 		clients = append(clients, client)
 	}
-	h.mu.Unlock()
+	h.mu.RUnlock()
 
 	for _, client := range clients {
 		select {
@@ -68,8 +96,8 @@ func (h *Hub) Broadcast(msg []byte) {
 }
 
 func (h *Hub) GetClientID(conn *websocket.Conn) string {
-	h.mu.Lock()
-	defer h.mu.Unlock()
+	h.mu.RLock()
+	defer h.mu.RUnlock()
 	return h.connToID[conn]
 }
 
@@ -93,11 +121,11 @@ func (h *Hub) UpdateCooldown(id string, now int64, cooldown int64) bool {
 	return true
 }
 
-func (h *Hub) RemoveAll(conn *websocket.Conn) {
+func (h *Hub) RemoveClient(conn *websocket.Conn) {
 	h.mu.Lock()
 
-	id := h.connToID[conn]
 	client := h.clients[conn]
+	id := h.connToID[conn]
 
 	delete(h.clients, conn)
 	delete(h.connToID, conn)
@@ -109,9 +137,10 @@ func (h *Hub) RemoveAll(conn *websocket.Conn) {
 	h.mu.Unlock()
 
 	if client != nil {
-		close(client.send)
+		client.cancel()
 	}
 }
+
 
 func trySend(ch chan []byte, msg []byte) {
     select {

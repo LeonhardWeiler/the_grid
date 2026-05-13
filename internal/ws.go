@@ -19,11 +19,6 @@ type ClientMsg struct {
 	ClientID    string `json:"clientId"`
 }
 
-type Client struct {
-	conn *websocket.Conn
-	send chan []byte
-}
-
 type InitMsg struct {
 	Type    string      `json:"type"`
 	Pixels  any         `json:"pixels"`
@@ -70,7 +65,7 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 	conn.SetReadLimit(MaxMessageSize)
 
 	defer func() {
-		h.RemoveAll(conn)
+		h.RemoveClient(conn)
 		_ = conn.Close(websocket.StatusNormalClosure, "")
 	}()
 
