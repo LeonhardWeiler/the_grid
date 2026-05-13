@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"bytes"
 
 	"github.com/coder/websocket"
 )
@@ -39,7 +40,7 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 		_ = conn.Close(
 			websocket.StatusNormalClosure,
 			"",
-		)
+			)
 	}()
 
 	snap, version := h.Store.Snapshot()
@@ -57,9 +58,11 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 		context.Background(),
 		websocket.MessageText,
 		initMsg,
-	); err != nil {
+		); err != nil {
 		return
 	}
+
+	invalidCount := 0
 
 	for {
 		_, data, err := conn.Read(context.Background())
@@ -69,9 +72,24 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 
 		var msg ClientMsg
 
-		if err := json.Unmarshal(data, &msg); err != nil {
+		decoder := json.NewDecoder(bytes.NewReader(data))
+		decoder.DisallowUnknownFields()
+
+		if err := decoder.Decode(&msg); err != nil {
+			invalidCount++
+
+			if invalidCount >= 3 {
+				return
+			}
+
 			continue
 		}
+
+		if decoder.More() {
+			continue
+		}
+
+		invalidCount = 0
 
 		switch msg.Type {
 
@@ -80,9 +98,17 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
+			if h.connToID[conn] != "" {
+				continue
+			}
+
 			h.connToID[conn] = msg.ClientID
 
 		case "sync":
+			if !ValidVersion(msg.LastVersion) {
+				continue
+			}
+
 			events := h.Store.GetSince(msg.LastVersion)
 
 			if events == nil {
@@ -101,7 +127,7 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 				context.Background(),
 				websocket.MessageText,
 				out,
-			)
+				)
 
 		case "set_pixel":
 			id := h.connToID[conn]
@@ -132,14 +158,14 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 				"%d:%d",
 				msg.X,
 				msg.Y,
-			)
+				)
 
 			ev := h.Store.Set(
 				key,
 				msg.X,
 				msg.Y,
 				msg.Color,
-			)
+				)
 
 			out, err := json.Marshal(map[string]any{
 				"type":    "pixel_update",
@@ -166,7 +192,7 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 				context.Background(),
 				websocket.MessageText,
 				cd,
-			)
+				)
 
 		default:
 			continue

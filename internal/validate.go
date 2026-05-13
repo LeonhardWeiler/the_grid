@@ -20,3 +20,7 @@ func ValidColor(color string) bool {
 func ValidClientID(id string) bool {
 	return clientIDRegex.MatchString(id)
 }
+
+func ValidVersion(v int) bool {
+	return v >= 0
+}
