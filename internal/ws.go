@@ -4,10 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
-	"bytes"
 
 	"github.com/coder/websocket"
 )
@@ -21,26 +19,22 @@ type ClientMsg struct {
 	ClientID    string `json:"clientId"`
 }
 
+type Client struct {
+    conn *websocket.Conn
+    send chan []byte
+}
+
 func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 	conn, err := websocket.Accept(w, r, nil)
-	if err != nil {
-		log.Println(err)
+	client := h.Add(conn)
+	if client == nil {
 		return
 	}
-
 	conn.SetReadLimit(MaxMessageSize)
 
-	h.Add(conn)
-
 	defer func() {
-		delete(h.connToID, conn)
-
-		h.Remove(conn)
-
-		_ = conn.Close(
-			websocket.StatusNormalClosure,
-			"",
-			)
+		h.RemoveAll(conn)
+		_ = conn.Close(websocket.StatusNormalClosure, "")
 	}()
 
 	snap, version := h.Store.Snapshot()
@@ -50,16 +44,15 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 		"pixels":  snap,
 		"version": version,
 	})
+
 	if err != nil {
 		return
 	}
 
-	if err := conn.Write(
-		context.Background(),
-		websocket.MessageText,
-		initMsg,
-		); err != nil {
-		return
+	select {
+	case client.send <- initMsg:
+	default:
+	// drop slow client
 	}
 
 	invalidCount := 0
@@ -72,20 +65,11 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 
 		var msg ClientMsg
 
-		decoder := json.NewDecoder(bytes.NewReader(data))
-		decoder.DisallowUnknownFields()
-
-		if err := decoder.Decode(&msg); err != nil {
+		if err := json.Unmarshal(data, &msg); err != nil {
 			invalidCount++
-
 			if invalidCount >= 3 {
 				return
 			}
-
-			continue
-		}
-
-		if decoder.More() {
 			continue
 		}
 
@@ -98,11 +82,12 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			if h.connToID[conn] != "" {
+			id := h.GetClientID(conn)
+			if id != "" {
 				continue
 			}
 
-			h.connToID[conn] = msg.ClientID
+			h.SetClientID(conn, msg.ClientID)
 
 		case "sync":
 			if !ValidVersion(msg.LastVersion) {
@@ -110,10 +95,6 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 			}
 
 			events := h.Store.GetSince(msg.LastVersion)
-
-			if events == nil {
-				events = []Event{}
-			}
 
 			out, err := json.Marshal(map[string]any{
 				"type":   "sync",
@@ -123,14 +104,15 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
-			_ = conn.Write(
-				context.Background(),
-				websocket.MessageText,
-				out,
-				)
+			select {
+			case client.send <- out:
+			default:
+			// drop slow client
+			}
+
 
 		case "set_pixel":
-			id := h.connToID[conn]
+			id := h.GetClientID(conn)
 
 			if id == "" {
 				continue
@@ -146,13 +128,9 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 
 			now := time.Now().UnixMilli()
 
-			last := h.lastAction[id]
-
-			if now-last < CooldownMs {
+			if !h.UpdateCooldown(id, now, CooldownMs) {
 				continue
 			}
-
-			h.lastAction[id] = now
 
 			key := fmt.Sprintf(
 				"%d:%d",
@@ -188,11 +166,12 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
-			_ = conn.Write(
-				context.Background(),
-				websocket.MessageText,
-				cd,
-				)
+			select {
+			case client.send <- cd:
+			default:
+			// drop slow client
+			}
+
 
 		default:
 			continue
