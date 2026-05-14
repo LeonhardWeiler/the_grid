@@ -50,7 +50,12 @@ const (
 )
 
 func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
-	conn, err := websocket.Accept(w, r, nil)
+	conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
+		OriginPatterns: []string{
+			"http://localhost:5173",
+			"http://localhost:4000",
+		},
+	})
 	if err != nil {
 		return
 	}

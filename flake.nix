@@ -38,12 +38,15 @@
             gotools
             air
             git
+            bun
           ];
 
           shellHook = ''
             echo "🚀 The Grid dev environment ready"
             echo "Go version:"
             go version
+            echo "Bun version:"
+            bun --version
           '';
         };
       });

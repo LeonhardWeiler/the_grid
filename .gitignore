@@ -1,18 +1,57 @@
-# ---- Nix ----
+# =========================
+# Nix
+# =========================
 result/
 result*
-/result
 
-# ---- Go ----
+# =========================
+# Go
+# =========================
 vendor/
 *.exe
 *.out
 
-# ---- OS / IDE ----
+# Go build artifacts (falls du später build caches hast)
+*.test
+
+# =========================
+# Node / Frontend (Bun / Vite / TS)
+# =========================
+node_modules/
+bun.lock
+dist/
+dist-ssr/
+.vite/
+
+# optional (wenn du build output in public hast)
+public/dist/
+
+# =========================
+# Logs / temp
+# =========================
+tmp/
+*.log
+
+# =========================
+# OS / IDE
+# =========================
 .DS_Store
 .vscode/
 .idea/
 
-# ---- Logs / temp ----
-tmp/
-*.log
+# =========================
+# Environment / secrets (wichtig für später)
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# TS / build artifacts
+# =========================
+*.tsbuildinfo
+
+# =========================
+# optional: local frontend entry noise
+# =========================
+coverage/

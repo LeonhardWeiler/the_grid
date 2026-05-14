@@ -1,0 +1,149 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  background-color: white;
+}
+
+canvas {
+  display: block;
+  cursor: grab;
+  background-color: white;
+}
+
+canvas:active {
+  cursor: grabbing;
+}
+
+#cooldown {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  padding: 10px 16px;
+
+  background: rgba(0,0,0,0.75);
+  border: 1px solid white;
+
+  color: white;
+
+  font-family: sans-serif;
+  font-size: 14px;
+
+  z-index: 1000;
+
+  cursor: pointer;
+  user-select: none;
+
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    opacity 160ms ease;
+}
+
+#cooldown:hover {
+  background: white;
+  color: black;
+}
+
+#cooldown.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#coords {
+  position: fixed;
+
+  top: 16px;
+  right: 16px;
+
+  padding: 8px 12px;
+
+  background: rgba(0,0,0,0.7);
+  border: 1px solid white;
+
+  color: white;
+
+  font-family: monospace;
+  font-size: 14px;
+
+  pointer-events: none;
+
+  z-index: 1000;
+}
+
+#palette {
+  position: fixed;
+
+  left: 16px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+
+  padding: 12px;
+
+  background: rgba(0,0,0,0.7);
+  border: 1px solid white;
+
+  z-index: 1000;
+
+  backdrop-filter: blur(6px);
+}
+
+.color {
+  width: 34px;
+  height: 34px;
+
+  border: 1px solid rgba(255,255,255,0.25);
+
+  padding: 0;
+  margin: 0;
+
+  cursor: pointer;
+
+  transition:
+    transform 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.color:hover {
+  transform: scale(1.08);
+
+  border-color: white;
+}
+
+.color.active {
+  border-color: white;
+
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.15),
+    0 0 12px rgba(255,255,255,0.35);
+
+  transform: scale(1.12);
+}
+
+#minimap {
+  position: fixed;
+
+  top: 16px;
+  left: 16px;
+
+  width: 250px;
+  height: 250px;
+
+  background: rgba(0,0,0,0.72);
+
+  border: 1px solid white;
+
+  image-rendering: pixelated;
+
+  z-index: 1000;
+
+  backdrop-filter: blur(6px);
+}
