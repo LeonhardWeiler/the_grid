@@ -1,4 +1,4 @@
-import { GRID_SIZE } from "../camera/camera.js"
+import { GRID_SIZE } from "../camera/camera"
 
 export interface Pixel {
   x: number

@@ -1,5 +1,5 @@
 import { canvas } from "../dom"
-import { camera, BASE_PIXEL_SIZE } from "../camera/camera.js"
+import { camera, BASE_PIXEL_SIZE } from "../camera/camera"
 
 export interface Pixel {
   x: number

@@ -8,7 +8,7 @@ import {
   GRID_SIZE,
   camera,
   BASE_PIXEL_SIZE
-} from "../camera/camera.js"
+} from "../camera/camera"
 
 import { pixels } from "./render.js"
 

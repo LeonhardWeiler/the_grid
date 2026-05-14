@@ -6,23 +6,24 @@ import {
   BASE_PIXEL_SIZE,
   GRID_SIZE,
   clampCamera
-} from "./camera.js"
+} from "./camera"
 
 import { screenToWorld } from "../utils/coords"
-import { requestRender } from "../render/render.js"
+import { requestRender } from "../render/render"
 import { state } from "../state"
+import type { Pixel } from "../state"
 
 let dragging = false
 let moved = false
 
-let last = {
+const last: { x: number; y: number } = {
   x: 0,
   y: 0
 }
 
-export function setupControls() {
+export function setupControls(): void {
 
-  canvas.addEventListener("mousedown", (e) => {
+  canvas.addEventListener("mousedown", (e: MouseEvent) => {
     dragging = true
     moved = false
 
@@ -34,7 +35,7 @@ export function setupControls() {
     dragging = false
   })
 
-  window.addEventListener("mousemove", (e) => {
+  window.addEventListener("mousemove", (e: MouseEvent) => {
     if (dragging) {
       const dx = e.clientX - last.x
       const dy = e.clientY - last.y
@@ -52,56 +53,38 @@ export function setupControls() {
       last.y = e.clientY
     }
 
-    const world = screenToWorld(
-      e.clientX,
-      e.clientY
-    )
+    const world: Pixel = screenToWorld(e.clientX, e.clientY)
 
     if (
-      world.x < 0 ||
-      world.x >= GRID_SIZE ||
-      world.y < 0 ||
-      world.y >= GRID_SIZE
+      world.x < 0 || world.x >= GRID_SIZE ||
+      world.y < 0 || world.y >= GRID_SIZE
     ) {
-
       if (state.hoverPixel !== null) {
         state.hoverPixel = null
         requestRender()
       }
-
       return
     }
 
     state.hoverPixel = world
 
     const centered = toCenteredCoords(world.x, world.y)
-
     coordsEl.textContent = `${centered.x} / ${centered.y}`
 
     requestRender()
   })
 
-  window.addEventListener("wheel", (e) => {
-
+  window.addEventListener("wheel", (e: WheelEvent) => {
     e.preventDefault()
 
     const factor = 1.1
-
-    if (e.deltaY < 0) {
-      camera.tzoom *= factor
-    } else {
-      camera.tzoom /= factor
-    }
-
-    camera.tzoom =
-      Math.max(0.08, Math.min(2, camera.tzoom))
+    camera.tzoom *= e.deltaY < 0 ? factor : 1 / factor
+    camera.tzoom = Math.max(0.08, Math.min(2, camera.tzoom))
 
     clampCamera()
-
   }, { passive: false })
 
   window.addEventListener("resize", () => {
-
     canvas.width = window.innerWidth
     canvas.height = window.innerHeight
 
@@ -109,6 +92,6 @@ export function setupControls() {
   })
 }
 
-export function didDrag() {
+export function didDrag(): boolean {
   return moved
 }

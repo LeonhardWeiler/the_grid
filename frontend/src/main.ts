@@ -9,12 +9,12 @@ import {
   GRID_SIZE,
   fitToScreen,
   camera
-} from "./camera/camera.js"
+} from "./camera/camera"
 
 import {
   setupControls,
   didDrag
-} from "./camera/controls.js"
+} from "./camera/controls"
 
 import {
   render,

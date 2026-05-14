@@ -4,7 +4,7 @@ import {
   camera,
   BASE_PIXEL_SIZE,
   GRID_SIZE
-} from "../camera/camera.js"
+} from "../camera/camera"
 
 export function drawGrid() {
 
