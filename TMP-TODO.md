@@ -45,20 +45,6 @@
     Denn dein Backend kann es jetzt korrekt behandeln.
 
 3.
-    optional: ctx timeout beim Read
-
-    Aktuell:
-
-    ctx := context.Background()
-
-    Später besser:
-
-    ctx, cancel := context.WithCancel(...)
-    defer cancel()
-
-    (aber kein Muss jetzt)
-
-4.
     🟡 MINOR IMPROVEMENTS (optional, wirklich klein)
     a. Doppelter Snapshot im fallback ist okay, aber teuer
 
@@ -90,6 +76,3 @@
     ✔ aktuell okay
     👉 später optimierbar (write queue / async broadcast)
 
-5.
-    Kleiner Bug, aber das war der Fehler den ich jetzt
-    herausgefunden hab, wenn ich einen Pixel setze und dann halt einen Cooldown bekomme, den Tab aber neulade, dann steht nichts mehr mit Cooldown unten, sondern Set Pixel und es geht aber nicht, weil ich ja tatsächlich noch einen habe, dieser nur nicht an den client visuell weitergegeben wird

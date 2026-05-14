@@ -14,6 +14,7 @@ interface PixelMessage {
   color?: string
   events?: { x: number; y: number; color: string }[]
   end?: number
+  cooldownEnd?: number
 }
 
 export function createWS(clientId: string) {
@@ -39,6 +40,9 @@ export function createWS(clientId: string) {
             }
           }
           requestRender()
+          if (msg.cooldownEnd !== undefined) {
+            setCooldown(msg.cooldownEnd)
+          }
           break
         }
 

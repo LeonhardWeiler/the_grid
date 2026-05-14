@@ -33,10 +33,11 @@ type CooldownMsg struct {
 }
 
 type ServerResponse struct {
-	Type    string            `json:"type"`
-	Pixels  map[string]string `json:"pixels,omitempty"`
-	Events  []Event           `json:"events,omitempty"`
-	Version int               `json:"version"`
+	Type    		string            `json:"type"`
+	Pixels 		  map[string]string `json:"pixels,omitempty"`
+	Events  		[]Event           `json:"events,omitempty"`
+	Version     int               `json:"version"`
+	CooldownEnd int64 						`json:"cooldownEnd,omitempty"`
 }
 
 const (
@@ -69,12 +70,6 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 		h.RemoveClient(conn)
 		_ = conn.Close(websocket.StatusNormalClosure, "")
 	}()
-
-	snap, version := h.Store.Snapshot()
-
-	if err := handleInit(client, snap, version); err != nil {
-		return
-	}
 
 	invalidCount := 0
 	ctx, cancel := context.WithCancel(context.Background())
@@ -111,6 +106,12 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 
 			h.SetClientID(conn, msg.ClientID)
 
+			snap, version := h.Store.Snapshot()
+
+			if err := handleInit(h, client, conn, snap, version); err != nil {
+				return
+			}
+
 		case MsgTypeSync:
 			handleSync(h, client, msg)
 
@@ -127,11 +128,14 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleInit(client *Client, snap map[string]string, version int) error {
+func handleInit(h *Hub, client *Client, conn *websocket.Conn, snap map[string]string, version int,) error {
+	id := h.GetClientID(conn)
+
 	resp := ServerResponse{
-		Type:    MsgTypeInit,
-		Pixels:  snap,
-		Version: version,
+		Type:         MsgTypeInit,
+		Pixels:       snap,
+		Version:      version,
+		CooldownEnd:  h.GetCooldownEnd(id),
 	}
 
 	b, err := json.Marshal(resp)

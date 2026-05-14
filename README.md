@@ -130,22 +130,6 @@ bun run package
 
 ---
 
-## Concept
-
-```text
-Browser Canvas
-    ↓
-WebSocket Connection
-    ↓
-Go WebSocket Server
-    ↓
-Shared In-Memory Grid State
-    ↓
-Broadcast Updates To All Clients
-```
-
----
-
 ## Current Status
 
 * [x] Go project setup

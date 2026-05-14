@@ -131,6 +131,19 @@ func (h *Hub) UpdateCooldown(id string, now int64, cooldown int64) bool {
 	return true
 }
 
+func (h *Hub) GetCooldownEnd(id string) int64 {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	last := h.lastAction[id]
+
+	if last == 0 {
+		return 0
+	}
+
+	return last + CooldownMs
+}
+
 func (h *Hub) RemoveClient(conn *websocket.Conn) {
 	h.mu.Lock()
 
