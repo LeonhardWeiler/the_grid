@@ -10,7 +10,7 @@ import {
 
 import { screenToWorld } from "../utils/coords.js"
 import { requestRender } from "../render/render.js"
-import { state } from "../state.js"
+import { state } from "../state"
 
 let dragging = false
 let moved = false

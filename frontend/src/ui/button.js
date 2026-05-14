@@ -1,6 +1,6 @@
 import { cooldownEl } from "../dom"
 import { GRID_SIZE } from "../camera/camera.js"
-import { state } from "../state.js"
+import { state } from "../state"
 
 import {
   toCenteredCoords

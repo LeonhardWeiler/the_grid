@@ -1,5 +1,5 @@
 import { paletteEl } from "../dom"
-import { state } from "../state.js"
+import { state } from "../state"
 
 export function setupPalette() {
 

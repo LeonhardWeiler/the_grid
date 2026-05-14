@@ -1,5 +1,5 @@
 import { canvas, cooldownEl } from "./dom"
-import { state } from "./state.js"
+import { state } from "./state"
 
 import {
   setupPalette

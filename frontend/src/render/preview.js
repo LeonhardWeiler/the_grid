@@ -1,5 +1,5 @@
 import { ctx } from "../dom"
-import { state } from "../state.js"
+import { state } from "../state"
 import { worldToScreen } from "../utils/coords.js"
 
 export function drawPreview() {
