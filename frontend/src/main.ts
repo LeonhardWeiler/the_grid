@@ -3,7 +3,7 @@ import { state } from "./state"
 
 import {
   setupPalette
-} from "./ui/palette.js"
+} from "./ui/palette"
 
 import {
   GRID_SIZE,
@@ -23,7 +23,7 @@ import {
 
 import {
   updateButtonUI
-} from "./ui/button.js"
+} from "./ui/button"
 
 import {
   isCooldownActive

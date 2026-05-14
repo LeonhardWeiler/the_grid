@@ -1,5 +1,5 @@
 export interface Pixel {
-  x: number
+  x: number;
   y: number
 }
 

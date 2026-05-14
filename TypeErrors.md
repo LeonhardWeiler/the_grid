@@ -1,9 +1,4 @@
 78% ~/files/projects/the_grid $ bunx tsc
-frontend/src/ui/cooldown.js:5:29 - error TS7006: Parameter 'end' implicitly has an 'any' type.
-
-5 export function setCooldown(end) {
-                              ~~~
-
 frontend/src/ui/palette.js:14:16 - error TS2339: Property 'dataset' does not exist on type 'Element'.
 
 14         button.dataset.color
@@ -65,10 +60,9 @@ frontend/src/ws.js:81:9 - error TS7005: Variable 'ws' implicitly has an 'any' ty
            ~~
 
 
-Found 13 errors in 5 files.
+Found 12 errors in 4 files.
 
 Errors  Files
-     1  frontend/src/ui/cooldown.js:5
      1  frontend/src/ui/palette.js:14
      4  frontend/src/utils/coords.js:4
      2  frontend/src/utils/gridCoords.js:3
