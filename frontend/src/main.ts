@@ -27,7 +27,7 @@ import {
 
 import {
   isCooldownActive
-} from "./ui/cooldown.js"
+} from "./ui/cooldown"
 
 import {
   screenToWorld

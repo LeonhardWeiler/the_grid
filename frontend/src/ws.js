@@ -5,7 +5,7 @@ import {
 
 import {
   setCooldown
-} from "./ui/cooldown.js"
+} from "./ui/cooldown"
 
 export function createWS(clientId) {
   let ws

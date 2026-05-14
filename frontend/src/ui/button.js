@@ -8,7 +8,7 @@ import {
 
 import {
   getCooldownRemaining
-} from "./cooldown.js"
+} from "./cooldown"
 
 
 export function updateButtonUI() {
