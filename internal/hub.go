@@ -15,6 +15,7 @@ type Hub struct {
 	lastAction  map[string]int64
 	connToID    map[*websocket.Conn]string
 	idToClients map[string]map[*Client]struct{}
+	Persistence *Persistence
 }
 
 type Client struct {
@@ -25,12 +26,24 @@ type Client struct {
 }
 
 func NewHub() *Hub {
+	p := NewPersistence("data/snapshot.json")
+
+	pixels, version, err := p.Load()
+	if err != nil {
+		panic(err)
+	}
+
+	store := NewPixelStore()
+	store.pixels = pixels
+	store.version = version
+
 	return &Hub{
 		clients:     make(map[*websocket.Conn]*Client),
-		Store:       NewPixelStore(),
+		Store: 			 store,
 		lastAction:  make(map[string]int64),
 		connToID:    make(map[*websocket.Conn]string),
 		idToClients: make(map[string]map[*Client]struct{}),
+		Persistence: p,
 	}
 }
 
@@ -108,6 +121,10 @@ func (h *Hub) SendToClientID(id string, msg []byte) {
 	h.mu.RLock()
 
 	clientSet := h.idToClients[id]
+	clientSet, ok := h.idToClients[id]
+	if !ok {
+		return
+	}
 	clients := make([]*Client, 0, len(clientSet))
 
 	for client := range clientSet {

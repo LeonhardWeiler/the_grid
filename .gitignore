@@ -13,6 +13,7 @@ vendor/
 
 # Go build artifacts (falls du später build caches hast)
 *.test
+data/
 
 # =========================
 # Node / Frontend (Bun / Vite / TS)
