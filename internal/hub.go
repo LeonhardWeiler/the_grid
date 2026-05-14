@@ -90,7 +90,7 @@ func (h *Hub) Broadcast(msg []byte) {
 		select {
 		case client.send <- msg:
 		default:
-		// drop slow client
+			client.cancel()
 		}
 	}
 }
@@ -130,10 +130,6 @@ func (h *Hub) RemoveClient(conn *websocket.Conn) {
 	delete(h.clients, conn)
 	delete(h.connToID, conn)
 
-	if id != "" {
-		delete(h.lastAction, id)
-	}
-
 	h.mu.Unlock()
 
 	if client != nil {
@@ -146,5 +142,6 @@ func trySend(ch chan []byte, msg []byte) {
     select {
     case ch <- msg:
     default:
+			client.cancel()
     }
 }

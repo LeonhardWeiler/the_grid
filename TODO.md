@@ -86,7 +86,7 @@
 
 ## 🔵 P4 - FEATURES (nice-to-have)
 
-### [ ] Minimap UI
+### [X] Minimap UI
 ### [ ] Pixel history (who painted what)
 ### [ ] Heatmap of activity
 ### [ ] Mobile gesture support

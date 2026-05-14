@@ -44,8 +44,8 @@ func (s *PixelStore) Set(key string, x, y int, color string) Event {
 }
 
 func (s *PixelStore) GetSince(v int) []Event {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
 	res := make([]Event, 0)
 
@@ -59,8 +59,8 @@ func (s *PixelStore) GetSince(v int) []Event {
 }
 
 func (s *PixelStore) Snapshot() (map[string]string, int) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
 	copy := make(map[string]string)
 	for k, v := range s.pixels {
