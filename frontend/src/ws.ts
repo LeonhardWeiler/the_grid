@@ -4,27 +4,30 @@ import { setCooldown } from "./ui/cooldown"
 interface InitMessage {
   type: "init_client"
   clientId: string
+  lastVersion: number
 }
 
 interface PixelMessage {
   type: "init" | "pixel_update" | "sync" | "cooldown"
+  version?: number
   pixels?: Record<string, string>
   x?: number
   y?: number
   color?: string
-  events?: { x: number; y: number; color: string }[]
+  events?: { version: number; x: number; y: number; color: string}[]
   end?: number
   cooldownEnd?: number
 }
 
 export function createWS(clientId: string) {
   let ws: WebSocket | null = null
+  let version = Number(localStorage.getItem("version")) || 0
 
   function connect() {
     ws = new WebSocket("ws://localhost:4000/ws")
 
     ws.onopen = () => {
-      const msg: InitMessage = { type: "init_client", clientId }
+      const msg: InitMessage = {type: "init_client", clientId, lastVersion: version}
       ws?.send(JSON.stringify(msg))
     }
 
@@ -43,6 +46,13 @@ export function createWS(clientId: string) {
           if (msg.cooldownEnd !== undefined) {
             setCooldown(msg.cooldownEnd)
           }
+          if (msg.version !== undefined) {
+            version = msg.version
+            localStorage.setItem(
+              "version",
+              String(version)
+            )
+          }
           break
         }
 
@@ -50,6 +60,14 @@ export function createWS(clientId: string) {
           if (msg.x !== undefined && msg.y !== undefined && msg.color) {
             pixels.set(`${msg.x}:${msg.y}`, msg.color)
             requestRender()
+            if (msg.version !== undefined) {
+              version = msg.version
+
+              localStorage.setItem(
+                "version",
+                String(version)
+              )
+            }
           }
           break
         }
@@ -60,6 +78,14 @@ export function createWS(clientId: string) {
               pixels.set(`${ev.x}:${ev.y}`, ev.color)
             }
             requestRender()
+            if (msg.version !== undefined) {
+              version = msg.version
+
+              localStorage.setItem(
+                "version",
+                String(version)
+              )
+            }
           }
           break
         }

@@ -106,11 +106,37 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 
 			h.SetClientID(conn, msg.ClientID)
 
+			events, ok := h.Store.GetSince(msg.LastVersion)
+
+			if ok && len(events) > 0 {
+				resp := ServerResponse{
+					Type:    MsgTypeSync,
+					Events:  events,
+					Version: h.Store.Version(),
+				}
+
+				b, err := json.Marshal(resp)
+				if err != nil {
+					return
+				}
+
+				trySend(client.send, b)
+				continue
+			}
+
 			snap, version := h.Store.Snapshot()
 
-			if err := handleInit(h, client, conn, snap, version); err != nil {
+			if err := handleInit(
+				h,
+				client,
+				conn,
+				snap,
+				version,
+				); err != nil {
 				return
 			}
+
+			continue
 
 		case MsgTypeSync:
 			handleSync(h, client, msg)
