@@ -19,17 +19,6 @@ type ClientMsg struct {
 	ClientID    string `json:"clientId"`
 }
 
-type InitMsg struct {
-	Type    string            `json:"type"`
-	Pixels  map[string]string `json:"pixels"`
-	Version int               `json:"version"`
-}
-
-type SyncMsg struct {
-	Type   string `json:"type"`
-	Events []Event `json:"events"`
-}
-
 type PixelUpdateMsg struct {
 	Type    string `json:"type"`
 	Version int    `json:"version"`
@@ -41,6 +30,13 @@ type PixelUpdateMsg struct {
 type CooldownMsg struct {
 	Type string `json:"type"`
 	End  int64  `json:"end"`
+}
+
+type ServerResponse struct {
+	Type    string            `json:"type"`
+	Pixels  map[string]string `json:"pixels,omitempty"`
+	Events  []Event           `json:"events,omitempty"`
+	Version int               `json:"version"`
 }
 
 const (
@@ -76,7 +72,8 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 
 	invalidCount := 0
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	for {
 		_, data, err := conn.Read(ctx)
@@ -125,20 +122,19 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleInit(client *Client, snap any, version int) error {
-	init := InitMsg{
+func handleInit(client *Client, snap map[string]string, version int) error {
+	resp := ServerResponse{
 		Type:    MsgTypeInit,
 		Pixels:  snap,
 		Version: version,
 	}
 
-	b, err := json.Marshal(init)
+	b, err := json.Marshal(resp)
 	if err != nil {
 		return err
 	}
 
 	trySend(client.send, b)
-
 	return nil
 }
 
@@ -152,28 +148,35 @@ func handleSync(h *Hub, client *Client, msg ClientMsg) {
 	if !ok {
 		snap, version := h.Store.Snapshot()
 
-		out, err := json.Marshal(InitMsg{
+		resp := ServerResponse{
 			Type:    MsgTypeInit,
 			Pixels:  snap,
 			Version: version,
-		})
+		}
+
+		b, err := json.Marshal(resp)
 		if err != nil {
 			return
 		}
 
-		trySend(client.send, out)
+		trySend(client.send, b)
 		return
 	}
 
-	out, err := json.Marshal(SyncMsg{
-		Type:   MsgTypeSync,
-		Events: events,
-	})
+	_, version := h.Store.Snapshot()
+
+	resp := ServerResponse{
+		Type:    MsgTypeSync,
+		Events:  events,
+		Version: version,
+	}
+
+	b, err := json.Marshal(resp)
 	if err != nil {
 		return
 	}
 
-	trySend(client.send, out)
+	trySend(client.send, b)
 }
 
 func handleSetPixel(h *Hub, client *Client, id string, msg ClientMsg) {
