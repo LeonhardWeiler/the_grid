@@ -8,7 +8,7 @@ import {
   clampCamera
 } from "./camera.js"
 
-import { screenToWorld } from "../utils/coords.js"
+import { screenToWorld } from "../utils/coords"
 import { requestRender } from "../render/render.js"
 import { state } from "../state"
 

@@ -1,6 +1,6 @@
 import { ctx, canvas } from "../dom"
 import { pixels } from "./render.js"
-import { worldToScreen } from "../utils/coords.js"
+import { worldToScreen } from "../utils/coords"
 
 export function drawPixels() {
 

@@ -1,9 +1,4 @@
-78% ~/files/projects/the_grid $ bunx tsc
-frontend/src/ui/palette.js:14:16 - error TS2339: Property 'dataset' does not exist on type 'Element'.
-
-14         button.dataset.color
-                  ~~~~~~~
-
+76% ~/files/projects/the_grid $ bunx tsc
 frontend/src/utils/coords.js:4:31 - error TS7006: Parameter 'clientX' implicitly has an 'any' type.
 
 4 export function screenToWorld(clientX, clientY) {
@@ -60,11 +55,10 @@ frontend/src/ws.js:81:9 - error TS7005: Variable 'ws' implicitly has an 'any' ty
            ~~
 
 
-Found 12 errors in 4 files.
+Found 11 errors in 3 files.
 
 Errors  Files
-     1  frontend/src/ui/palette.js:14
      4  frontend/src/utils/coords.js:4
      2  frontend/src/utils/gridCoords.js:3
      5  frontend/src/ws.js:10
-78% ~/files/projects/the_grid $
+76% ~/files/projects/the_grid $

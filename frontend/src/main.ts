@@ -31,7 +31,7 @@ import {
 
 import {
   screenToWorld
-} from "./utils/coords.js"
+} from "./utils/coords"
 
 import { createWS } from "./ws.js"
 
