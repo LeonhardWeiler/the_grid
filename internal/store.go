@@ -10,7 +10,7 @@ type Event struct {
 }
 
 type PixelStore struct {
-	mu      sync.Mutex
+	mu      sync.RWMutex
 	pixels  map[string]string
 	events  []Event
 	version int
@@ -62,7 +62,8 @@ func (s *PixelStore) Snapshot() (map[string]string, int) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	copy := make(map[string]string)
+	copy := make(map[string]string, len(s.pixels))
+
 	for k, v := range s.pixels {
 		copy[k] = v
 	}

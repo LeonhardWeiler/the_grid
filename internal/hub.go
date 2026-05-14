@@ -125,7 +125,6 @@ func (h *Hub) RemoveClient(conn *websocket.Conn) {
 	h.mu.Lock()
 
 	client := h.clients[conn]
-	id := h.connToID[conn]
 
 	delete(h.clients, conn)
 	delete(h.connToID, conn)
@@ -142,6 +141,5 @@ func trySend(ch chan []byte, msg []byte) {
     select {
     case ch <- msg:
     default:
-			client.cancel()
     }
 }
