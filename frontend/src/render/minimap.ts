@@ -15,7 +15,16 @@ export function drawMinimap(): void {
   const scale: number = MINIMAP_SIZE / GRID_SIZE
 
   for (const [key, color] of pixels) {
-    const [x, y]: number[] = key.split(":").map(Number)
+    const parts = key.split(":").map(Number)
+
+    if (parts.length !== 2) continue
+    const xVal = parts[0]
+    const yVal = parts[1]
+    if (xVal === undefined || yVal === undefined) continue
+    const x: number = xVal
+    const y: number = yVal
+    if (Number.isNaN(x) || Number.isNaN(y)) continue
+
     minimapCtx.fillStyle = color
     minimapCtx.fillRect(x * scale, y * scale, Math.max(1, scale), Math.max(1, scale))
   }

@@ -35,7 +35,7 @@ export function createWS(clientId: string) {
           pixels.clear()
           if (msg.pixels) {
             for (const key in msg.pixels) {
-              pixels.set(key, msg.pixels[key])
+              msg.pixels[key] && pixels.set(key, msg.pixels[key])
             }
           }
           requestRender()
