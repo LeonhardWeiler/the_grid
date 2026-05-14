@@ -1,5 +1,6 @@
 import { pixels, requestRender } from "./render/render"
 import { setCooldown } from "./ui/cooldown"
+import { connection } from "./state"
 
 interface InitMessage {
   type: "init_client"
@@ -25,10 +26,12 @@ export function createWS(clientId: string) {
 
   function connect() {
     ws = new WebSocket("ws://localhost:4000/ws")
+    connection.status = "connecting"
 
     ws.onopen = () => {
       const msg: InitMessage = {type: "init_client", clientId, lastVersion: version}
       ws?.send(JSON.stringify(msg))
+      connection.status = "connected"
     }
 
     ws.onmessage = (e: MessageEvent) => {
@@ -101,6 +104,7 @@ export function createWS(clientId: string) {
 
     ws.onclose = () => {
       setTimeout(connect, 1000)
+      connection.status = "disconnected"
     }
   }
 

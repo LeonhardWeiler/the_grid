@@ -42,3 +42,15 @@ if (!(paletteElRaw instanceof HTMLElement)) {
   throw new Error("Palette element not found")
 }
 export const paletteEl: HTMLElement = paletteElRaw
+
+const connectionOverlayRaw = document.getElementById("connection-overlay")
+if (!(connectionOverlayRaw instanceof HTMLElement)) {
+  throw new Error("Connection overlay element not found")
+}
+export const connectionOverlay: HTMLElement = connectionOverlayRaw
+
+const connectionWarningRaw = document.getElementById("connection-warning")
+if (!(connectionWarningRaw instanceof HTMLElement)) {
+  throw new Error("Connection warning element not found")
+}
+export const connectionWarning: HTMLElement = connectionWarningRaw

@@ -147,3 +147,36 @@ canvas:active {
 
   backdrop-filter: blur(6px);
 }
+
+#connection-overlay {
+  position: fixed;
+  inset: 0;
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0, 0, 0, 0.75);
+
+  z-index: 9999;
+
+  backdrop-filter: blur(6px);
+}
+
+#connection-warning {
+  padding: 14px 18px;
+
+  background: rgb(0, 0, 0);
+  border: 1px solid white;
+
+  color: white;
+
+  font-family: sans-serif;
+  font-size: 14px;
+
+  box-shadow:
+    0 0 20px rgba(0, 0, 0, 0.6),
+    0 0 10px rgba(255, 255, 255, 0.08);
+
+  user-select: none;
+}

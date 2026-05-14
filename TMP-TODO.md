@@ -75,6 +75,3 @@
 
     ✔ aktuell okay
     👉 später optimierbar (write queue / async broadcast)
-
-4.
-    frontend ui warning when no connection to server

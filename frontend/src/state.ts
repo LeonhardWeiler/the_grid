@@ -8,3 +8,7 @@ export const state = {
   selectedPixel: null as Pixel | null,
   selectedColor: "#ff0000",
 }
+
+export const connection = {
+  status: "connecting" as "connecting" | "connected" | "disconnected",
+}

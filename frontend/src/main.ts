@@ -1,38 +1,13 @@
 import { canvas, cooldownEl } from "./dom"
 import { state } from "./state"
-
-import {
-  setupPalette
-} from "./ui/palette"
-
-import {
-  GRID_SIZE,
-  fitToScreen,
-  camera
-} from "./camera/camera"
-
-import {
-  setupControls,
-  didDrag
-} from "./camera/controls"
-
-import {
-  render,
-  requestRender
-} from "./render/render"
-
-import {
-  updateButtonUI
-} from "./ui/button"
-
-import {
-  isCooldownActive
-} from "./ui/cooldown"
-
-import {
-  screenToWorld
-} from "./utils/coords"
-
+import { updateConnectionUI } from "./ui/connection"
+import { setupPalette } from "./ui/palette"
+import { GRID_SIZE, fitToScreen, camera} from "./camera/camera"
+import { setupControls, didDrag} from "./camera/controls"
+import { render, requestRender} from "./render/render"
+import { updateButtonUI } from "./ui/button"
+import { isCooldownActive } from "./ui/cooldown"
+import { screenToWorld } from "./utils/coords"
 import { createWS } from "./ws"
 
 let clientId =
@@ -129,6 +104,7 @@ function loop() {
   render()
   updateButtonUI()
   requestAnimationFrame(loop)
+  updateConnectionUI()
 }
 
 loop()
