@@ -30,20 +30,20 @@
 
 ## 🟠 P1 - IMPORTANT (scaling + abuse resistance)
 
-### [ ] Improved rate limiting
+### [X] Improved rate limiting
 - Add optional IP-based rate limit fallback
 - Prevent reconnect spam abuse
 - Add burst protection (short-term spam spikes)
 
 ---
 
-### [ ] Broadcast stability improvements
+### [x] Broadcast stability improvements
 - Ensure no blocked writes can affect system
 - Consider per-client write timeout (optional)
 
 ---
 
-### [ ] Server-side validation hardening
+### [x] Server-side validation hardening
 - Strict color whitelist enforcement (already partial)
 - Strict coordinate bounds enforcement (verify full coverage)
 - Max message size enforcement (verify full coverage)
@@ -52,14 +52,14 @@
 
 ## 🟡 P2 - UX / CLIENT RELIABILITY
 
-### [ ] Client reconnect handling
+### [x] Client reconnect handling
 - Implement robust reconnect logic
 - Store lastVersion client-side
 - Auto-resync on reconnect
 
 ---
 
-### [ ] Better sync strategy
+### [x] Better sync strategy
 - Optimize sync for large event history
 - Consider chunked sync responses
 

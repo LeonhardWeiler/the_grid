@@ -32,6 +32,7 @@ Built with:
 * Go
 * `github.com/coder/websocket`
 * `net/http`
+* File-based snapshot persistence (JSON)
 
 ### Frontend
 
@@ -142,6 +143,8 @@ bun run package
 * [x] Real-time synchronization
 * [x] Deployment setup
 * [x] Rate limiting / cooldown
+* [x] Connection state indicator (reconnect UI overlay)
+* [x] Server-authoritative pixel state (clients are stateless)
 * [ ] Auto Deployment via SSH
 * [ ] Multi-user testing
 * [ ] Binary WebSocket protocol
