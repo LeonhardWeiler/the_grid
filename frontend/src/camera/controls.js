@@ -1,5 +1,5 @@
 import { canvas, coordsEl } from "../dom"
-import { toCenteredCoords } from "../utils/gridCoords.js"
+import { toCenteredCoords } from "../utils/gridCoords"
 
 import {
   camera,
