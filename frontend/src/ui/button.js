@@ -1,4 +1,4 @@
-import { cooldownEl } from "../dom.js"
+import { cooldownEl } from "../dom"
 import { GRID_SIZE } from "../camera/camera.js"
 import { state } from "../state.js"
 

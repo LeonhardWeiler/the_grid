@@ -1,4 +1,4 @@
-import { canvas } from "../dom.js"
+import { canvas } from "../dom"
 
 export const GRID_SIZE = 1000
 export const BASE_PIXEL_SIZE = 40

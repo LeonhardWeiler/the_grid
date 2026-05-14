@@ -1,4 +1,4 @@
-import { canvas, cooldownEl } from "./dom.js"
+import { canvas, cooldownEl } from "./dom"
 import { state } from "./state.js"
 
 import {

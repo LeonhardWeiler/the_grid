@@ -1,4 +1,4 @@
-import { ctx } from "../dom.js"
+import { ctx } from "../dom"
 import { state } from "../state.js"
 import { worldToScreen } from "../utils/coords.js"
 

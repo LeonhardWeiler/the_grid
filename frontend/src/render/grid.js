@@ -1,4 +1,4 @@
-import { canvas, ctx } from "../dom.js"
+import { canvas, ctx } from "../dom"
 
 import {
   camera,

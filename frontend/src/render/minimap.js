@@ -1,7 +1,8 @@
 import {
   minimap,
-  minimapCtx
-} from "../dom.js"
+  minimapCtx,
+  canvas
+} from "../dom"
 
 import {
   GRID_SIZE,
@@ -10,7 +11,6 @@ import {
 } from "../camera/camera.js"
 
 import { pixels } from "./render.js"
-import { canvas } from "../dom.js"
 
 const MINIMAP_SIZE = 180
 

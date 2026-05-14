@@ -1,4 +1,4 @@
-import { ctx, canvas } from "../dom.js"
+import { ctx, canvas } from "../dom"
 import { pixels } from "./render.js"
 import { worldToScreen } from "../utils/coords.js"
 

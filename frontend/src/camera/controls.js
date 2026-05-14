@@ -1,4 +1,4 @@
-import { canvas, coordsEl } from "../dom.js"
+import { canvas, coordsEl } from "../dom"
 import { toCenteredCoords } from "../utils/gridCoords.js"
 
 import {

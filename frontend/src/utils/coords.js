@@ -1,4 +1,4 @@
-import { canvas } from "../dom.js"
+import { canvas } from "../dom"
 import { camera, BASE_PIXEL_SIZE } from "../camera/camera.js"
 
 export function screenToWorld(clientX, clientY) {

@@ -1,4 +1,4 @@
-import { canvas, ctx } from "../dom.js"
+import { canvas, ctx } from "../dom"
 import { drawMinimap } from "./minimap.js"
 import { drawGrid } from "./grid.js"
 import { drawPixels } from "./pixels.js"
