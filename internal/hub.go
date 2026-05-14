@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/coder/websocket"
 )
@@ -61,11 +62,20 @@ func (h *Hub) Add(c *websocket.Conn) *Client {
 					return
 				}
 
-				if err := cl.conn.Write(
-					context.Background(),
+				ctx, cancel := context.WithTimeout(
+					cl.ctx,
+					5*time.Second,
+					)
+
+				err := cl.conn.Write(
+					ctx,
 					websocket.MessageText,
 					msg,
-					); err != nil {
+					)
+
+				cancel()
+
+				if err != nil {
 					return
 				}
 
