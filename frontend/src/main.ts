@@ -33,7 +33,7 @@ import {
   screenToWorld
 } from "./utils/coords"
 
-import { createWS } from "./ws.js"
+import { createWS } from "./ws"
 
 let clientId =
   localStorage.getItem("clientId")
