@@ -9,14 +9,12 @@ import (
 )
 
 type Hub struct {
-	mu sync.RWMutex
-
-	clients map[*websocket.Conn]*Client
-
-	Store *PixelStore
-
-	lastAction map[string]int64
-	connToID   map[*websocket.Conn]string
+	mu 					sync.RWMutex
+	clients 		map[*websocket.Conn]*Client
+	Store 			*PixelStore
+	lastAction  map[string]int64
+	connToID    map[*websocket.Conn]string
+	idToClients map[string]map[*Client]struct{}
 }
 
 type Client struct {
@@ -28,10 +26,11 @@ type Client struct {
 
 func NewHub() *Hub {
 	return &Hub{
-		clients:    make(map[*websocket.Conn]*Client),
-		Store:      NewPixelStore(),
-		lastAction: make(map[string]int64),
-		connToID:   make(map[*websocket.Conn]string),
+		clients:     make(map[*websocket.Conn]*Client),
+		Store:       NewPixelStore(),
+		lastAction:  make(map[string]int64),
+		connToID:    make(map[*websocket.Conn]string),
+		idToClients: make(map[string]map[*Client]struct{}),
 	}
 }
 
@@ -108,12 +107,11 @@ func (h *Hub) Broadcast(msg []byte) {
 func (h *Hub) SendToClientID(id string, msg []byte) {
 	h.mu.RLock()
 
-	clients := make([]*Client, 0)
+	clientSet := h.idToClients[id]
+	clients := make([]*Client, 0, len(clientSet))
 
-	for conn, client := range h.clients {
-		if h.connToID[conn] == id {
-			clients = append(clients, client)
-		}
+	for client := range clientSet {
+		clients = append(clients, client)
 	}
 
 	h.mu.RUnlock()
@@ -136,7 +134,19 @@ func (h *Hub) GetClientID(conn *websocket.Conn) string {
 func (h *Hub) SetClientID(conn *websocket.Conn, id string) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
+
 	h.connToID[conn] = id
+
+	client := h.clients[conn]
+	if client == nil {
+		return
+	}
+
+	if h.idToClients[id] == nil {
+		h.idToClients[id] = make(map[*Client]struct{})
+	}
+
+	h.idToClients[id][client] = struct{}{}
 }
 
 func (h *Hub) UpdateCooldown(id string, now int64, cooldown int64) bool {
@@ -170,9 +180,20 @@ func (h *Hub) RemoveClient(conn *websocket.Conn) {
 	h.mu.Lock()
 
 	client := h.clients[conn]
+	id := h.connToID[conn]
 
 	delete(h.clients, conn)
 	delete(h.connToID, conn)
+
+	if id != "" {
+		if clients, ok := h.idToClients[id]; ok {
+			delete(clients, client)
+
+			if len(clients) == 0 {
+				delete(h.idToClients, id)
+			}
+		}
+	}
 
 	h.mu.Unlock()
 
