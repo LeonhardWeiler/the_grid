@@ -105,6 +105,28 @@ func (h *Hub) Broadcast(msg []byte) {
 	}
 }
 
+func (h *Hub) SendToClientID(id string, msg []byte) {
+	h.mu.RLock()
+
+	clients := make([]*Client, 0)
+
+	for conn, client := range h.clients {
+		if h.connToID[conn] == id {
+			clients = append(clients, client)
+		}
+	}
+
+	h.mu.RUnlock()
+
+	for _, client := range clients {
+		select {
+		case client.send <- msg:
+		default:
+			client.cancel()
+		}
+	}
+}
+
 func (h *Hub) GetClientID(conn *websocket.Conn) string {
 	h.mu.RLock()
 	defer h.mu.RUnlock()

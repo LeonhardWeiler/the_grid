@@ -252,5 +252,5 @@ func handleSetPixel(h *Hub, client *Client, id string, msg ClientMsg) {
 		return
 	}
 
-	trySend(client.send, cd)
+	h.SendToClientID(id, cd)
 }
