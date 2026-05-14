@@ -4,6 +4,7 @@ const (
 	GridSize       = 512
 	CooldownMs     = 5000
 	MaxMessageSize = 1024
+	MaxEvents      = 100_000
 )
 
 var AllowedColors = map[string]bool{

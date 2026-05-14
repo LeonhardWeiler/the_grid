@@ -1,4 +1,4 @@
-2.
+1.
 
 Cooldown reconnect abuse fixen.
 
@@ -40,12 +40,25 @@ klein
 nur timestamps
 viel weniger kritisch als event growth
 
-3.
-
-Write timeout hinzufügen.
-
-4.
+2.
 
 Dann Event Ring Buffer implementieren.
 
 Das ist der perfekte nächste große Schritt.
+
+Bessere zukünftige API
+
+Später:
+
+func (s *PixelStore) GetSince(v int) ([]Event, bool)
+
+bool = success.
+
+z.B.:
+
+events, ok := s.GetSince(v)
+
+Wenn ok == false:
+→ Full Snapshot notwendig.
+
+Aber für jetzt reicht dein Ansatz.

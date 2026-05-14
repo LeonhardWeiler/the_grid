@@ -13,13 +13,15 @@ type PixelStore struct {
 	mu      sync.RWMutex
 	pixels  map[string]string
 	events  []Event
+	start   int
+	count   int
 	version int
 }
 
 func NewPixelStore() *PixelStore {
 	return &PixelStore{
 		pixels: make(map[string]string),
-		events: make([]Event, 0),
+		events: make([]Event, MaxEvents),
 	}
 }
 
@@ -38,7 +40,17 @@ func (s *PixelStore) Set(key string, x, y int, color string) Event {
 		Color:   color,
 	}
 
-	s.events = append(s.events, ev)
+	var idx int
+
+	if s.count == MaxEvents {
+		idx = s.start
+		s.start = (s.start + 1) % MaxEvents
+	} else {
+		idx = (s.start + s.count) % MaxEvents
+		s.count++
+	}
+
+	s.events[idx] = ev
 
 	return ev
 }
@@ -47,9 +59,22 @@ func (s *PixelStore) GetSince(v int) []Event {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	res := make([]Event, 0)
+	if s.count == 0 {
+		return nil
+	}
 
-	for _, e := range s.events {
+	oldest := s.events[s.start].Version
+
+	if v < oldest {
+		return nil
+	}
+
+	res := make([]Event, 0, s.count)
+
+	for i := 0; i < s.count; i++ {
+		idx := (s.start + i) % MaxEvents
+		e := s.events[idx]
+
 		if e.Version > v {
 			res = append(res, e)
 		}
