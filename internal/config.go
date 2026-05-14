@@ -13,4 +13,5 @@ var AllowedColors = map[string]bool{
 	"#ff0000": true,
 	"#00ff00": true,
 	"#0000ff": true,
+	"#ffff00": true,
 }

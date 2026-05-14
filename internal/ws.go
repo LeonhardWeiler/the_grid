@@ -147,7 +147,23 @@ func handleSync(h *Hub, client *Client, msg ClientMsg) {
 		return
 	}
 
-	events := h.Store.GetSince(msg.LastVersion)
+	events, ok := h.Store.GetSince(msg.LastVersion)
+
+	if !ok {
+		snap, version := h.Store.Snapshot()
+
+		out, err := json.Marshal(InitMsg{
+			Type:    MsgTypeInit,
+			Pixels:  snap,
+			Version: version,
+		})
+		if err != nil {
+			return
+		}
+
+		trySend(client.send, out)
+		return
+	}
 
 	out, err := json.Marshal(SyncMsg{
 		Type:   MsgTypeSync,

@@ -55,18 +55,18 @@ func (s *PixelStore) Set(key string, x, y int, color string) Event {
 	return ev
 }
 
-func (s *PixelStore) GetSince(v int) []Event {
+func (s *PixelStore) GetSince(v int) ([]Event, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	if s.count == 0 {
-		return nil
+		return nil, true
 	}
 
 	oldest := s.events[s.start].Version
 
 	if v < oldest {
-		return nil
+		return nil, false
 	}
 
 	res := make([]Event, 0, s.count)
@@ -80,7 +80,7 @@ func (s *PixelStore) GetSince(v int) []Event {
 		}
 	}
 
-	return res
+	return res, true
 }
 
 func (s *PixelStore) Snapshot() (map[string]string, int) {

@@ -62,3 +62,20 @@ Wenn ok == false:
 → Full Snapshot notwendig.
 
 Aber für jetzt reicht dein Ansatz.
+
+Nächster sinnvoller Schritt
+
+3.
+
+Jetzt wäre tatsächlich ein guter Zeitpunkt für:
+
+reconnect robustness im Frontend
+
+also:
+
+websocket reconnect
+retry backoff
+lastVersion speichern
+auto-resync
+
+Denn dein Backend kann es jetzt korrekt behandeln.
