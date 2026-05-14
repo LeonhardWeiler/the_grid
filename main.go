@@ -16,8 +16,7 @@ func main() {
 
 	hub := internal.NewHub()
 
-	fs := http.FileServer(http.Dir("./public"))
-
+	fs := http.FileServer(http.Dir("./public/dist"))
 	http.Handle("/", fs)
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
