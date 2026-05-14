@@ -19,7 +19,7 @@ import {
 import {
   render,
   requestRender
-} from "./render/render.js"
+} from "./render/render"
 
 import {
   updateButtonUI

@@ -89,3 +89,7 @@
 
     ✔ aktuell okay
     👉 später optimierbar (write queue / async broadcast)
+
+5.
+    Kleiner Bug, aber das war der Fehler den ich jetzt
+    herausgefunden hab, wenn ich einen Pixel setze und dann halt einen Cooldown bekomme, den Tab aber neulade, dann steht nichts mehr mit Cooldown unten, sondern Set Pixel und es geht aber nicht, weil ich ja tatsächlich noch einen habe, dieser nur nicht an den client visuell weitergegeben wird

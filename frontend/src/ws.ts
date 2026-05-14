@@ -1,4 +1,4 @@
-import { pixels, requestRender } from "./render/render.js"
+import { pixels, requestRender } from "./render/render"
 import { setCooldown } from "./ui/cooldown"
 
 interface InitMessage {
