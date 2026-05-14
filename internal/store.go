@@ -25,6 +25,12 @@ func NewPixelStore() *PixelStore {
 	}
 }
 
+func (s *PixelStore) Version() int {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.version
+}
+
 func (s *PixelStore) Set(key string, x, y int, color string) Event {
 	s.mu.Lock()
 	defer s.mu.Unlock()

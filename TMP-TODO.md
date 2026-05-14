@@ -1,69 +1,91 @@
 1.
+    a)
+    Cooldown reconnect abuse fixen.
+    Noch besser später
+    Wenn du irgendwann:
 
-Cooldown reconnect abuse fixen.
+    Accounts
+    Sessions
+    Cookies
 
-Noch besser später
+    machst,
+    dann server-generated IDs.
+    Aber für ein minimalistisches Grid reicht:
+    clientID + IP fallback
+    vollkommen.
 
-Wenn du irgendwann:
+    b)
 
-Accounts
-Sessions
-Cookies
+    Warum das trotzdem noch nicht perfekt ist
+    Aktuell wächst:
 
-machst:
+    lastAction map[string]int64
 
-Dann server-generated IDs.
-
-Aber für ein minimalistisches Grid reicht:
-
-clientID + IP fallback
-
-vollkommen.
-
-Warum das trotzdem noch nicht perfekt ist
-
-Aktuell wächst:
-
-lastAction map[string]int64
-
-unendlich.
-
-Denn IDs werden nie entfernt.
-
-ABER:
-
-Das ist momentan okay.
-
-Weil:
-
-klein
-nur timestamps
-viel weniger kritisch als event growth
+    unendlich.
+    Denn IDs werden nie entfernt.
+    ABER:
+    Das ist momentan okay.
+    Weil:
+    klein
+    nur timestamps
+    viel weniger kritisch als event growth
 
 2.
+    Jetzt wäre tatsächlich ein guter Zeitpunkt für:
 
-Jetzt wäre tatsächlich ein guter Zeitpunkt für:
+    reconnect robustness im Frontend
 
-reconnect robustness im Frontend
+    also:
 
-also:
+    websocket reconnect
+    retry backoff
+    lastVersion speichern
+    auto-resync
 
-websocket reconnect
-retry backoff
-lastVersion speichern
-auto-resync
+    Denn dein Backend kann es jetzt korrekt behandeln.
 
-Denn dein Backend kann es jetzt korrekt behandeln.
+3.
+    optional: ctx timeout beim Read
 
-3. optional: ctx timeout beim Read
+    Aktuell:
 
-Aktuell:
+    ctx := context.Background()
 
-ctx := context.Background()
+    Später besser:
 
-Später besser:
+    ctx, cancel := context.WithCancel(...)
+    defer cancel()
 
-ctx, cancel := context.WithCancel(...)
-defer cancel()
+    (aber kein Muss jetzt)
 
-(aber kein Muss jetzt)
+4.
+    🟡 MINOR IMPROVEMENTS (optional, wirklich klein)
+    a. Doppelter Snapshot im fallback ist okay, aber teuer
+
+    Du hast:
+
+    snap, version := h.Store.Snapshot()
+
+    👉 gut, aber kann später optimiert werden
+
+    Optional:
+
+    Store.Version() + separate Pixel access
+    oder SnapshotMeta() später
+
+    Aber: nicht jetzt nötig
+
+    b. invalidCount Schutz ist minimal
+    if invalidCount >= 3
+
+    ✔ gut als MVP protection
+    👉 später evtl:
+
+    per-IP tracking
+    exponential penalty
+
+    c. handleSetPixel blocking broadcast
+    h.Broadcast(out)
+
+    ✔ aktuell okay
+    👉 später optimierbar (write queue / async broadcast)

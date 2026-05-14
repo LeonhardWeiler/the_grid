@@ -163,12 +163,10 @@ func handleSync(h *Hub, client *Client, msg ClientMsg) {
 		return
 	}
 
-	_, version := h.Store.Snapshot()
-
 	resp := ServerResponse{
 		Type:    MsgTypeSync,
 		Events:  events,
-		Version: version,
+		Version: h.Store.Version(),
 	}
 
 	b, err := json.Marshal(resp)
