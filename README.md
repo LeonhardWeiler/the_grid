@@ -6,8 +6,9 @@ Built with:
 
 * Go
 * WebSockets
-* Vanilla HTML/CSS/JS
-* HTML Canvas API
+* TypeScript
+* HTML5 Canvas API
+* Bun (frontend tooling)
 * Nix Flakes (optional)
 * In-memory state (no database)
 
@@ -34,9 +35,11 @@ Built with:
 
 ### Frontend
 
-* Vanilla JavaScript
+* TypeScript
+* Vite (bundler)
 * HTML5 Canvas
 * CSS
+* Bun (package manager / build tooling)
 
 ---
 
@@ -52,12 +55,14 @@ nix develop
 
 go mod tidy
 air
+bun run dev
 ```
 
 Open:
 
 ```text
-http://localhost:4000
+http://localhost:5173 (dev frontend)
+http://localhost:4000 (backend)
 ```
 
 ---
@@ -67,24 +72,61 @@ http://localhost:4000
 Requirements:
 
 * Go 1.24+
+* Bun
 
 Install dependencies:
 
 ```bash
 go mod tidy
+cd frontend
+bun install
 ```
 
-Run the server:
+---
 
-```bash
-go run .
-```
+## Development
 
-Or with hot reload:
+Run backend:
 
 ```bash
 air
 ```
+
+Run frontend:
+
+```bash
+bun run dev
+```
+
+---
+
+## Build
+
+### Frontend build only
+
+Build frontend into static files:
+
+```bash
+bun run build
+```
+
+Output:
+
+```text
+public/dist
+```
+
+---
+
+### Full package build
+
+Build everything via Nix:
+
+```bash
+bun run package
+```
+
+(This runs frontend build first, then `nix build`)
 
 ---
 
