@@ -42,31 +42,6 @@ viel weniger kritisch als event growth
 
 2.
 
-Dann Event Ring Buffer implementieren.
-
-Das ist der perfekte nächste große Schritt.
-
-Bessere zukünftige API
-
-Später:
-
-func (s *PixelStore) GetSince(v int) ([]Event, bool)
-
-bool = success.
-
-z.B.:
-
-events, ok := s.GetSince(v)
-
-Wenn ok == false:
-→ Full Snapshot notwendig.
-
-Aber für jetzt reicht dein Ansatz.
-
-Nächster sinnvoller Schritt
-
-3.
-
 Jetzt wäre tatsächlich ein guter Zeitpunkt für:
 
 reconnect robustness im Frontend
@@ -79,3 +54,16 @@ lastVersion speichern
 auto-resync
 
 Denn dein Backend kann es jetzt korrekt behandeln.
+
+3. optional: ctx timeout beim Read
+
+Aktuell:
+
+ctx := context.Background()
+
+Später besser:
+
+ctx, cancel := context.WithCancel(...)
+defer cancel()
+
+(aber kein Muss jetzt)

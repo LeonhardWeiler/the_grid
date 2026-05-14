@@ -20,14 +20,14 @@ type ClientMsg struct {
 }
 
 type InitMsg struct {
-	Type    string      `json:"type"`
-	Pixels  any         `json:"pixels"`
-	Version int         `json:"version"`
+	Type    string            `json:"type"`
+	Pixels  map[string]string `json:"pixels"`
+	Version int               `json:"version"`
 }
 
 type SyncMsg struct {
 	Type   string `json:"type"`
-	Events any    `json:"events"`
+	Events []Event `json:"events"`
 }
 
 type PixelUpdateMsg struct {

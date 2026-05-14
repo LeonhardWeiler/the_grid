@@ -10,7 +10,7 @@
 
 ---
 
-### [ ] Event Log Limitation (Memory safety)
+### [X] Event Log Limitation (Memory safety)
 - Replace unbounded `events []Event`
 - Implement:
   - ring buffer OR

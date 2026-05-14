@@ -60,7 +60,7 @@ func (s *PixelStore) GetSince(v int) ([]Event, bool) {
 	defer s.mu.RUnlock()
 
 	if s.count == 0 {
-		return nil, true
+		return []Event{}, true
 	}
 
 	oldest := s.events[s.start].Version
