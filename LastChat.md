@@ -1,253 +1,340 @@
-Sehr gut, das ist jetzt schon auf einem Niveau, wo man wirklich anfangen muss, **kleine Architekturfehler sauber zu machen**, sonst wird es später “spooky bugs”.
-
-Ich geh dir das in drei Teile:
-
----
-
-# 🧠 1. Was gerade schon gut ist
-
-Du hast jetzt:
-
-## ✅ Frontend
-
-* connection state (connecting/connected/disconnected)
-* reconnect loop
-* overlay UI sauber getrennt
-* version tracking
-* cooldown server-authoritative
-
-## ✅ Backend
-
-* snapshot persistence
-* cooldown tracking per clientId
-* id → client mapping
-* safe send queue (`client.send`)
-* versioned events
-
-👉 Das ist schon **sehr solide realtime architecture**
-
----
-
-# 🚨 2. Aber du hast 3 echte Probleme drin
-
-Ich sag sie dir direkt, weil sonst debugst du später ewig:
-
----
-
-## ❌ Problem 1: connection status race condition
-
-```ts
-ws.onopen = () => {
-  connection.status = "connected"
-}
-```
-
-👉 Problem:
-Du setzt “connected”, aber:
-
-* server hat evtl. noch nicht init bestätigt
-* du bist technisch noch “not fully ready”
-
-👉 besser wäre:
-**connected erst nach init_ack**
-
----
-
-## ❌ Problem 2: SendToClientID ist logisch leicht kaputt
-
-Hier:
-
-```go
-clientSet := h.idToClients[id]
-clientSet, ok := h.idToClients[id]
-```
-
-👉 du überschreibst unnötig + doppelt lookup
-
-Und noch wichtiger:
-
-👉 wenn id nicht existiert → panic Risiko indirekt durch nil range
-
----
-
-## ❌ Problem 3: connection overlay status ist zu grob
-
-Du hast nur:
-
-```ts
-"connecting" | "connected" | "disconnected"
-```
-
-Aber Realität ist:
-
-* connecting (socket open)
-* handshaking (init phase)
-* ready (fully synced)
-* reconnecting
-* offline
-
-👉 dein System kollabiert sonst bei edge cases
-
----
-
-# 🧠 3. Was ich dir JETZT empfehlen würde (nächster Schritt)
+# Jetzt ist der richtige nächste Schritt
 
 Nicht neue Features.
 
-👉 sondern:
+Nicht Binary Protocol.
 
-# 🔧 “Connection State Machine Fix”
-
-Das ist der echte nächste Schritt.
+Nicht Chunking.
 
 ---
 
-# 🟢 Schritt 1 — Frontend State verbessern
+# Jetzt kommt:
 
-In `state.ts`:
+# ✅ Frontend Connection State Machine
+
+Das ist jetzt der wichtigste Architekturfix.
+
+Warum?
+
+Weil dein Backend mittlerweile korrekt genug ist,
+dass die meisten zukünftigen Bugs jetzt vom Frontend-Lifecycle kommen werden.
+
+Aktuell:
+
+```text
+WebSocket OPEN
+!=
+Canvas synchronized
+!=
+Client ready
+```
+
+Aber dein UI behandelt alles als:
+
+```text
+connected
+```
+
+Das wird später zu:
+
+* ghost clicks
+* stale canvas
+* reconnect race conditions
+* fake online state
+
+führen.
+
+---
+
+# EXAKTE TODO REIHENFOLGE AB JETZT
+
+---
+
+# STEP 1 — State erweitern
+
+## Datei
+
+```text
+frontend/src/state.ts
+```
+
+---
+
+## Aktuell
 
 ```ts
-export const connection = {
-  status: "connecting" as
-    | "connecting"
-    | "handshaking"
-    | "connected"
-    | "reconnecting"
-    | "disconnected",
+status:
+  | "connecting"
+  | "connected"
+  | "disconnected"
+```
+
+---
+
+## Neu
+
+```ts
+status:
+  | "connecting"
+  | "handshaking"
+  | "connected"
+  | "reconnecting"
+  | "disconnected"
+```
+
+---
+
+# Bedeutung der States
+
+## connecting
+
+WebSocket wird geöffnet.
+
+---
+
+## handshaking
+
+Socket offen, aber:
+
+* init/sync noch nicht fertig
+
+---
+
+## connected
+
+Canvas vollständig synchronisiert.
+
+---
+
+## reconnecting
+
+Verbindung verloren → reconnect loop aktiv.
+
+---
+
+## disconnected
+
+Optional später:
+
+* hard failure
+* manual disconnect
+* offline
+
+---
+
+# STEP 2 — `ws.ts` Flow korrigieren
+
+## Aktuell falsch
+
+```ts
+ws.onopen = () => {
+	connection.status = "connected"
 }
 ```
 
 ---
 
-# 🟢 Schritt 2 — WS Flow sauber machen
+# Neu
 
-In `ws.ts`:
-
-## connect:
-
-```ts
-connection.status = "connecting"
-```
-
----
-
-## onopen:
+## onopen
 
 ```ts
 connection.status = "handshaking"
 ```
 
+Denn:
+
+* socket offen
+* aber noch nicht synced
+
 ---
 
-## erst nach init message:
+# STEP 3 — connected erst nach init/sync
+
+In:
+
+```ts
+case "init"
+```
+
+und:
+
+```ts
+case "sync"
+```
+
+am Ende:
 
 ```ts
 connection.status = "connected"
 ```
 
-👉 DAS ist der wichtige fix
+---
+
+# Warum das wichtig ist
+
+Erst DANN gilt:
+
+```text
+client state == server state
+```
+
+Vorher nicht.
 
 ---
 
-## onclose:
+# STEP 4 — reconnect state korrigieren
+
+## Aktuell
+
+```ts
+connection.status = "disconnected"
+```
+
+---
+
+## Neu
 
 ```ts
 connection.status = "reconnecting"
+```
+
+weil:
+
+* reconnect läuft bereits
+
+---
+
+# STEP 5 — UI erweitern
+
+## Datei
+
+```text
+frontend/src/ui/connection.ts
+```
+
+---
+
+# Neue Zustände
+
+## connecting
+
+```text
+Connecting socket...
+```
+
+---
+
+## handshaking
+
+```text
+Syncing canvas...
+```
+
+---
+
+## reconnecting
+
+```text
+Reconnecting...
+```
+
+---
+
+## connected
+
+Overlay verstecken.
+
+---
+
+# STEP 6 — Exponential Backoff
+
+Danach.
+
+Nicht vorher.
+
+---
+
+# Ziel
+
+Aktuell:
+
+```ts
 setTimeout(connect, 1000)
 ```
 
----
+Später:
 
-# 🟢 Schritt 3 — Backend Init klar definieren
-
-Du brauchst eigentlich schon:
-
-* init
-* sync
-* pixel_update
-
-👉 aber semantisch fehlt:
-
-### “init_done” (optional, aber sauber)
-
-Oder du nutzt einfach:
-
-👉 init message = ready signal
-
----
-
-# 🟢 Schritt 4 — Overlay UI verbessern
-
-```ts
-switch (connection.status) {
-  case "connecting":
-    "Connecting socket..."
-    break
-  case "handshaking":
-    "Syncing canvas..."
-    break
-  case "reconnecting":
-    "Reconnecting..."
-    break
-}
+```text
+1s
+2s
+5s
+10s
 ```
 
----
-
-# 🔥 Warum das wichtig ist
-
-Aktuell hast du ein Problem:
-
-> UI sagt “connected”, obwohl system evtl. noch nicht ready ist
-
-Das führt später zu:
-
-* falschen clicks
-* missed sync events
-* ghost cooldown states
+mit max cap.
 
 ---
 
-# 🚀 4. Was ich als nächstes von dir brauche
+# STEP 7 — README/TODO Cleanup
 
-Wenn du weitermachen willst, schick mir noch:
-
-### 👉 ws.ts (komplett final nach deinen letzten Änderungen)
-
-### 👉 backend HandleWS (init + sync flow)
-
-### 👉 PixelStore snapshot + event logic
+Danach.
 
 ---
 
-Dann kann ich dir den nächsten Schritt bauen:
+# Was du NACH der State Machine machen solltest
 
-# 🧱 “Perfect Sync Layer”
+Dann kommt:
 
-mit:
+# 🔥 Full Hub Concurrency Audit
 
-* guaranteed state consistency
-* no flicker ever
-* deterministic reconnect
-* optional delta compression (wenn du willst später)
+Dann prüfen wir:
 
----
-
-# 🧭 Fazit
-
-Du bist gerade an dem Punkt:
-
-> “funktioniert sehr gut”
-
-aber jetzt kommt die Phase:
-
-> “keine edge-case bugs mehr möglich”
+* locks
+* iteration safety
+* disconnect races
+* map ownership
+* cancellation paths
 
 ---
 
-Wenn du willst, gehen wir als nächstes:
+# Was du NICHT jetzt machen solltest
 
-## 🔥 Connection State Machine + Init Protocol sauber designen
+Noch NICHT:
 
-das ist der Schritt, der dein Projekt wirklich “production-grade realtime system” macht.
+* binary websocket protocol
+* chunk system
+* redis
+* multi-server
+* replay system
+
+Das wäre zu früh.
+
+---
+
+# Dein aktueller Architekturstatus
+
+Ehrlich:
+
+Du bist jetzt an dem Punkt:
+
+```text
+"funktioniert"
+```
+
+→ vorbei.
+
+Jetzt beginnt:
+
+```text
+"deterministic realtime correctness"
+```
+
+Und genau da sind:
+
+* connection states
+* sync lifecycle
+* concurrency correctness
+
+die wichtigen Themen.
 
