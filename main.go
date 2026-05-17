@@ -28,13 +28,15 @@ func main() {
 	})
 
 	go func(h *internal.Hub) {
-		ticker := time.NewTicker(15 * time.Second)
+		ticker := time.NewTicker(internal.AutosaveInterval)
 		defer ticker.Stop()
 
 		for range ticker.C {
 			snap, version := h.Store.Snapshot()
 
-			_ = h.Persistence.Save(snap, version)
+			if err := h.Persistence.Save(snap, version); err != nil {
+				log.Println("autosave failed:", err)
+			}
 		}
 	}(hub)
 
@@ -44,11 +46,15 @@ func main() {
 	go func() {
 		<-c
 		snap, version := hub.Store.Snapshot()
-		_ = hub.Persistence.Save(snap, version)
+		if err := hub.Persistence.Save(snap, version); err != nil {
+			log.Println("shutdown save failed:", err)
+		}
 		os.Exit(0)
 	}()
 
 	log.Println("Server running on :4000")
 
-	http.ListenAndServe(":4000", nil)
+	if err := http.ListenAndServe(":4000", nil); err != nil {
+		log.Fatal(err)
+	}
 }

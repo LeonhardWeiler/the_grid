@@ -120,11 +120,12 @@ func (h *Hub) Broadcast(msg []byte) {
 func (h *Hub) SendToClientID(id string, msg []byte) {
 	h.mu.RLock()
 
-	clientSet := h.idToClients[id]
 	clientSet, ok := h.idToClients[id]
 	if !ok {
+		h.mu.RUnlock()
 		return
 	}
+
 	clients := make([]*Client, 0, len(clientSet))
 
 	for client := range clientSet {
