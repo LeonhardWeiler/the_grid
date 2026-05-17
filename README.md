@@ -167,7 +167,6 @@ The project focuses on:
 ## Future Ideas
 
 * Pixel history
-* Persistent canvas snapshots
 * Chunk-based updates
 * Binary packet protocol
 * Redis PubSub scaling

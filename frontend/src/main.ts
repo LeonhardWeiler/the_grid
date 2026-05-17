@@ -10,8 +10,7 @@ import { isCooldownActive } from "./ui/cooldown"
 import { screenToWorld } from "./utils/coords"
 import { createWS } from "./ws"
 
-let clientId =
-  localStorage.getItem("clientId")
+let clientId = localStorage.getItem("clientId")
 
 if (!clientId) {
   clientId = crypto.randomUUID()
@@ -83,14 +82,9 @@ function loop() {
   const oldY = camera.y
   const oldZoom = camera.zoom
 
-  camera.x +=
-    (camera.tx - camera.x) * 0.15
-
-  camera.y +=
-    (camera.ty - camera.y) * 0.15
-
-  camera.zoom +=
-    (camera.tzoom - camera.zoom) * 0.15
+  camera.x += (camera.tx - camera.x) * 0.15
+  camera.y += (camera.ty - camera.y) * 0.15
+  camera.zoom += (camera.tzoom - camera.zoom) * 0.15
 
   const moved =
     Math.abs(oldX - camera.x) > 0.001 ||

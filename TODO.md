@@ -2,7 +2,7 @@
 
 ## 🔴 P0 - CRITICAL (Stability / Data loss prevention)
 
-### [ ] Persistence System (SAVE/LOAD CANVAS)
+### [X] Persistence System (SAVE/LOAD CANVAS)
 - Save PixelStore to disk (JSON or binary snapshot)
 - Load snapshot on startup
 - Periodic autosave (e.g. every 10-30 seconds)
