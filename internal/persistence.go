@@ -38,7 +38,13 @@ func (p *Persistence) Save(pixels map[string]string, version int) error {
 		return err
 	}
 
-	return os.WriteFile(p.filePath, b, 0644)
+	tmpPath := p.filePath + ".tmp"
+
+	if err := os.WriteFile(tmpPath, b, 0644); err != nil {
+		return err
+	}
+
+	return os.Rename(tmpPath, p.filePath)
 }
 
 func (p *Persistence) Load() (map[string]string, int, error) {

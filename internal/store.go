@@ -101,3 +101,14 @@ func (s *PixelStore) Snapshot() (map[string]string, int) {
 
 	return copy, s.version
 }
+
+func (s *PixelStore) LoadSnapshot(
+	pixels map[string]string,
+	version int,
+) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.pixels = pixels
+	s.version = version
+}

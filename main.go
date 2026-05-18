@@ -4,10 +4,6 @@ import (
 	"log"
 	"mime"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 
 	"the_grid/internal"
 )
@@ -27,30 +23,8 @@ func main() {
 		internal.HandleWS(hub, w, r)
 	})
 
-	go func(h *internal.Hub) {
-		ticker := time.NewTicker(internal.AutosaveInterval)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			snap, version := h.Store.Snapshot()
-
-			if err := h.Persistence.Save(snap, version); err != nil {
-				log.Println("autosave failed:", err)
-			}
-		}
-	}(hub)
-
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-
-	go func() {
-		<-c
-		snap, version := hub.Store.Snapshot()
-		if err := hub.Persistence.Save(snap, version); err != nil {
-			log.Println("shutdown save failed:", err)
-		}
-		os.Exit(0)
-	}()
+	internal.StartAutosave(hub)
+	internal.SetupShutdownSave(hub)
 
 	log.Println("Server running on :4000")
 

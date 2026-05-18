@@ -34,8 +34,7 @@ func NewHub() *Hub {
 	}
 
 	store := NewPixelStore()
-	store.pixels = pixels
-	store.version = version
+	store.LoadSnapshot(pixels, version)
 
 	return &Hub{
 		clients:     make(map[*websocket.Conn]*Client),
