@@ -23,6 +23,8 @@ interface PixelMessage {
 export function createWS(clientId: string) {
   let ws: WebSocket | null = null
   let version = Number(localStorage.getItem("version")) || 0
+  let reconnectDelay = 1000
+  let reconnectTimer: number | null = null
 
   function connect() {
     ws = new WebSocket("ws://localhost:4000/ws")
@@ -45,6 +47,7 @@ export function createWS(clientId: string) {
 
       switch (msg.type) {
         case "init": {
+          reconnectDelay = 1000
           pixels.clear()
           if (msg.pixels) {
             for (const key in msg.pixels) {
@@ -84,6 +87,7 @@ export function createWS(clientId: string) {
         }
 
         case "sync": {
+          reconnectDelay = 1000
           if (msg.events) {
             for (const ev of msg.events) {
               pixels.set(`${ev.x}:${ev.y}`, ev.color)
@@ -112,14 +116,24 @@ export function createWS(clientId: string) {
       }
     }
 
-    ws.onclose = () => {
-      connection.status = "reconnecting"
+  ws.onclose = () => {
+    connection.status = "reconnecting"
 
-      setTimeout(() => {
-        connect()
-      }, 1000)
-    }
+    if (reconnectTimer !== null) return
+
+    const delay = reconnectDelay
+
+    reconnectTimer = window.setTimeout(() => {
+      reconnectTimer = null
+      connect()
+    }, delay)
+
+    reconnectDelay = Math.min(
+      reconnectDelay * 2,
+      15000
+    )
   }
+}
 
   connect()
 
