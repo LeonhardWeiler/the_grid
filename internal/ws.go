@@ -64,6 +64,7 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 	if client == nil {
 		return
 	}
+
 	conn.SetReadLimit(MaxMessageSize)
 
 	defer func() {
@@ -80,6 +81,8 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return
 		}
+
+		client.lastPong = time.Now()
 
 		var msg ClientMsg
 

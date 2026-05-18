@@ -19,10 +19,11 @@ type Hub struct {
 }
 
 type Client struct {
-	conn   *websocket.Conn
-	send   chan []byte
-	ctx    context.Context
-	cancel context.CancelFunc
+	conn     *websocket.Conn
+	send     chan []byte
+	ctx      context.Context
+	cancel   context.CancelFunc
+	lastPong time.Time
 }
 
 func NewHub() *Hub {
@@ -231,6 +232,7 @@ func (h *Hub) RemoveClient(conn *websocket.Conn) {
 
 	if client != nil {
 		client.cancel()
+		close(client.send)
 	}
 }
 

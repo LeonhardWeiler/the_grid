@@ -15,6 +15,7 @@ func init() {
 func main() {
 
 	hub := internal.NewHub()
+	go internal.StartPingLoop(hub)
 
 	fs := http.FileServer(http.Dir("./public/dist"))
 	http.Handle("/", fs)
