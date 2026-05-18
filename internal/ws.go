@@ -124,7 +124,7 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
-			snap, version := h.Store.Snapshot()
+			snap, version = h.Store.Snapshot()
 
 			if err := handleInit(
 				h,
