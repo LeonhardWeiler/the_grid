@@ -80,8 +80,6 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		client.lastSeen = time.Now()
-
 		var msg ClientMsg
 
 		if err := json.Unmarshal(data, &msg); err != nil {

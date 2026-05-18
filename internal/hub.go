@@ -23,7 +23,6 @@ type Client struct {
 	send     chan []byte
 	ctx      context.Context
 	cancel   context.CancelFunc
-	lastSeen time.Time
 }
 
 func NewHub() *Hub {
@@ -56,8 +55,6 @@ func (h *Hub) Add(c *websocket.Conn) *Client {
 		ctx:    ctx,
 		cancel: cancel,
 	}
-
-	client.lastSeen = time.Now()
 
 	h.mu.Lock()
 	h.clients[c] = client
@@ -101,9 +98,7 @@ func (h *Hub) Broadcast(msg []byte) {
 		select {
 		case client.send <- msg:
 		default:
-			go func() {
-				client.cancel()
-			}()
+			client.cancel()
 		}
 	}
 }

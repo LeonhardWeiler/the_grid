@@ -39,11 +39,17 @@ export function createWS(clientId: string) {
         lastVersion: version
       }
 
+      version = Number(localStorage.getItem("version")) || 0
       ws?.send(JSON.stringify(msg))
     }
 
     ws.onmessage = (e: MessageEvent) => {
-      const msg: PixelMessage = JSON.parse(e.data)
+      let msg: PixelMessage
+      try {
+        msg = JSON.parse(e.data)
+      } catch {
+        return
+      }
 
       switch (msg.type) {
         case "init": {
@@ -54,7 +60,6 @@ export function createWS(clientId: string) {
               msg.pixels[key] && pixels.set(key, msg.pixels[key])
             }
           }
-          requestRender()
           if (msg.cooldownEnd !== undefined) {
             setCooldown(msg.cooldownEnd)
           }
@@ -66,6 +71,7 @@ export function createWS(clientId: string) {
             )
           }
 
+          requestRender()
           connection.status = "connected"
           break
         }
@@ -74,6 +80,8 @@ export function createWS(clientId: string) {
           if (msg.x !== undefined && msg.y !== undefined && msg.color) {
             pixels.set(`${msg.x}:${msg.y}`, msg.color)
             requestRender()
+            reconnectDelay = 1000
+
             if (msg.version !== undefined) {
               version = msg.version
 
@@ -103,11 +111,13 @@ export function createWS(clientId: string) {
             }
           }
 
+          requestRender()
           connection.status = "connected"
           break
         }
 
         case "cooldown": {
+          reconnectDelay = 1000
           if (msg.end !== undefined) {
             setCooldown(msg.end)
           }
@@ -119,7 +129,10 @@ export function createWS(clientId: string) {
   ws.onclose = () => {
     connection.status = "reconnecting"
 
-    if (reconnectTimer !== null) return
+    if (reconnectTimer !== null) {
+      clearTimeout(reconnectTimer)
+      reconnectTimer = null
+    }
 
     const delay = reconnectDelay
 
