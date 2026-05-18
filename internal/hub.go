@@ -98,7 +98,7 @@ func (h *Hub) Broadcast(msg []byte) {
 		select {
 		case client.send <- msg:
 		default:
-			client.cancel()
+			h.RemoveClient(client.conn)
 		}
 	}
 }
@@ -124,7 +124,7 @@ func (h *Hub) SendToClientID(id string, msg []byte) {
 		select {
 		case client.send <- msg:
 		default:
-			client.cancel()
+			go h.RemoveClient(client.conn)
 		}
 	}
 }
