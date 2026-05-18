@@ -29,9 +29,15 @@ export function createWS(clientId: string) {
     connection.status = "connecting"
 
     ws.onopen = () => {
-      const msg: InitMessage = {type: "init_client", clientId, lastVersion: version}
+      connection.status = "handshaking"
+
+      const msg: InitMessage = {
+        type: "init_client",
+        clientId,
+        lastVersion: version
+      }
+
       ws?.send(JSON.stringify(msg))
-      connection.status = "connected"
     }
 
     ws.onmessage = (e: MessageEvent) => {
@@ -56,6 +62,8 @@ export function createWS(clientId: string) {
               String(version)
             )
           }
+
+          connection.status = "connected"
           break
         }
 
@@ -90,6 +98,8 @@ export function createWS(clientId: string) {
               )
             }
           }
+
+          connection.status = "connected"
           break
         }
 
@@ -103,8 +113,11 @@ export function createWS(clientId: string) {
     }
 
     ws.onclose = () => {
-      setTimeout(connect, 1000)
-      connection.status = "disconnected"
+      connection.status = "reconnecting"
+
+      setTimeout(() => {
+        connect()
+      }, 1000)
     }
   }
 

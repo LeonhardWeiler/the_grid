@@ -9,6 +9,13 @@ export const state = {
   selectedColor: "#ff0000",
 }
 
+export type ConnectionStatus =
+  | "connecting"
+  | "handshaking"
+  | "connected"
+  | "reconnecting"
+  | "disconnected"
+
 export const connection = {
-  status: "connecting" as "connecting" | "connected" | "disconnected",
+  status: "connecting" as ConnectionStatus,
 }

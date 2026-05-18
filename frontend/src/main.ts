@@ -1,5 +1,5 @@
 import { canvas, cooldownEl } from "./dom"
-import { state } from "./state"
+import { state, connection } from "./state"
 import { updateConnectionUI } from "./ui/connection"
 import { setupPalette } from "./ui/palette"
 import { GRID_SIZE, fitToScreen, camera} from "./camera/camera"
@@ -44,6 +44,7 @@ canvas.addEventListener("click", (e) => {
 })
 
 function confirmPixel() {
+  if (connection.status !== "connected") return
   if (!state.selectedPixel) return
   if (isCooldownActive()) return
 

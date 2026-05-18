@@ -4,18 +4,33 @@ import { connection } from "../state"
 export function updateConnectionUI(): void {
   if (!connectionOverlay || !connectionWarning) return
 
-  if (connection.status === "connected") {
-    connectionOverlay.style.display = "none"
-    return
-  }
+  switch (connection.status) {
+    case "connected":
+      connectionOverlay.style.display = "none"
+      return
 
-  connectionOverlay.style.display = "flex"
+    case "connecting":
+      connectionOverlay.style.display = "flex"
+      connectionWarning.textContent =
+        "🔄 Connecting socket..."
+      return
 
-  if (connection.status === "connecting") {
-    connectionWarning.textContent = "🔄 Connecting..."
-  }
+    case "handshaking":
+      connectionOverlay.style.display = "flex"
+      connectionWarning.textContent =
+        "🔄 Syncing canvas..."
+      return
 
-  if (connection.status === "disconnected") {
-    connectionWarning.textContent = "⚠️ Disconnected – reconnecting..."
+    case "reconnecting":
+      connectionOverlay.style.display = "flex"
+      connectionWarning.textContent =
+        "⚠️ Reconnecting..."
+      return
+
+    case "disconnected":
+      connectionOverlay.style.display = "flex"
+      connectionWarning.textContent =
+        "❌ Disconnected"
+      return
   }
 }
