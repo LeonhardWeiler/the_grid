@@ -109,6 +109,10 @@ func (s *PixelStore) LoadSnapshot(
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.pixels = pixels
+	copy := make(map[string]string, len(pixels))
+	for k, v := range pixels {
+		copy[k] = v
+	}
+	s.pixels = copy
 	s.version = version
 }

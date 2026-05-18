@@ -152,12 +152,27 @@ func (h *Hub) SetClientID(conn *websocket.Conn, id string) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	h.connToID[conn] = id
-
 	client := h.clients[conn]
 	if client == nil {
 		return
 	}
+
+	oldID := h.connToID[conn]
+	if oldID == id {
+		return
+	}
+
+	if oldID != "" && oldID != id {
+		if oldSet, ok := h.idToClients[oldID]; ok {
+			delete(oldSet, client)
+
+			if len(oldSet) == 0 {
+				delete(h.idToClients, oldID)
+			}
+		}
+	}
+
+	h.connToID[conn] = id
 
 	if h.idToClients[id] == nil {
 		h.idToClients[id] = make(map[*Client]struct{})
