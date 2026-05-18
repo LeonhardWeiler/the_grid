@@ -65,8 +65,6 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	conn.SetReadLimit(MaxMessageSize)
-
 	defer func() {
 		h.RemoveClient(conn)
 		_ = conn.Close(websocket.StatusNormalClosure, "")
@@ -82,7 +80,7 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		client.lastPong = time.Now()
+		client.lastSeen = time.Now()
 
 		var msg ClientMsg
 

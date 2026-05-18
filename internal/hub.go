@@ -23,7 +23,7 @@ type Client struct {
 	send     chan []byte
 	ctx      context.Context
 	cancel   context.CancelFunc
-	lastPong time.Time
+	lastSeen time.Time
 }
 
 func NewHub() *Hub {
@@ -57,15 +57,14 @@ func (h *Hub) Add(c *websocket.Conn) *Client {
 		cancel: cancel,
 	}
 
+	client.lastSeen = time.Now()
+
 	h.mu.Lock()
 	h.clients[c] = client
 	h.mu.Unlock()
 
 	go func(cl *Client) {
-		defer cl.conn.Close(
-			websocket.StatusNormalClosure,
-			"",
-			)
+		defer cl.conn.Close(websocket.StatusNormalClosure, "")
 
 		for {
 			select {
@@ -74,17 +73,8 @@ func (h *Hub) Add(c *websocket.Conn) *Client {
 					return
 				}
 
-				ctx, cancel := context.WithTimeout(
-					cl.ctx,
-					5*time.Second,
-					)
-
-				err := cl.conn.Write(
-					ctx,
-					websocket.MessageText,
-					msg,
-					)
-
+				ctx, cancel := context.WithTimeout(cl.ctx, 5*time.Second)
+				err := cl.conn.Write(ctx, websocket.MessageText, msg)
 				cancel()
 
 				if err != nil {
@@ -99,7 +89,6 @@ func (h *Hub) Add(c *websocket.Conn) *Client {
 
 	return client
 }
-
 func (h *Hub) Broadcast(msg []byte) {
 	h.mu.RLock()
 	clients := make([]*Client, 0, len(h.clients))
@@ -112,7 +101,9 @@ func (h *Hub) Broadcast(msg []byte) {
 		select {
 		case client.send <- msg:
 		default:
-			client.cancel()
+			go func() {
+				client.cancel()
+			}()
 		}
 	}
 }
@@ -215,15 +206,16 @@ func (h *Hub) RemoveClient(conn *websocket.Conn) {
 	client := h.clients[conn]
 	id := h.connToID[conn]
 
-	delete(h.clients, conn)
-	delete(h.connToID, conn)
+	if client != nil {
+		delete(h.clients, conn)
+		delete(h.connToID, conn)
 
-	if id != "" {
-		if clients, ok := h.idToClients[id]; ok {
-			delete(clients, client)
-
-			if len(clients) == 0 {
-				delete(h.idToClients, id)
+		if id != "" {
+			if clients, ok := h.idToClients[id]; ok {
+				delete(clients, client)
+				if len(clients) == 0 {
+					delete(h.idToClients, id)
+				}
 			}
 		}
 	}
