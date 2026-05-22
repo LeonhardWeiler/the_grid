@@ -219,14 +219,36 @@ func (h *Hub) RemoveClient(conn *websocket.Conn) {
 
 	if client != nil {
 		client.cancel()
-		client.send = nil
 	}
 }
-
 
 func trySend(ch chan []byte, msg []byte) {
     select {
     case ch <- msg:
     default:
     }
+}
+
+func (h *Hub) CleanupLastAction(maxAge int64) {
+	now := time.Now().UnixMilli()
+
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	for id, t := range h.lastAction {
+		if now-t > maxAge {
+			delete(h.lastAction, id)
+		}
+	}
+}
+
+func (h *Hub) StartPersistenceLoop() {
+	ticker := time.NewTicker(5 * time.Second)
+
+	go func() {
+		for range ticker.C {
+			snap, version := h.Store.Snapshot()
+			_ = h.Persistence.Save(snap, version)
+		}
+	}()
 }
