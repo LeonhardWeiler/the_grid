@@ -32,6 +32,7 @@ export function createWS(clientId: string) {
 
     ws.onopen = () => {
       connection.status = "handshaking"
+      version = Number(localStorage.getItem("version")) || 0
 
       const msg: InitMessage = {
         type: "init_client",
@@ -39,7 +40,6 @@ export function createWS(clientId: string) {
         lastVersion: version
       }
 
-      version = Number(localStorage.getItem("version")) || 0
       ws?.send(JSON.stringify(msg))
     }
 
@@ -80,7 +80,6 @@ export function createWS(clientId: string) {
           if (msg.x !== undefined && msg.y !== undefined && msg.color) {
             pixels.set(`${msg.x}:${msg.y}`, msg.color)
             requestRender()
-            reconnectDelay = 1000
 
             if (msg.version !== undefined) {
               version = msg.version
@@ -100,7 +99,6 @@ export function createWS(clientId: string) {
             for (const ev of msg.events) {
               pixels.set(`${ev.x}:${ev.y}`, ev.color)
             }
-            requestRender()
             if (msg.version !== undefined) {
               version = msg.version
 
@@ -117,7 +115,6 @@ export function createWS(clientId: string) {
         }
 
         case "cooldown": {
-          reconnectDelay = 1000
           if (msg.end !== undefined) {
             setCooldown(msg.end)
           }
@@ -145,6 +142,10 @@ export function createWS(clientId: string) {
       reconnectDelay * 2,
       15000
     )
+  }
+
+  ws.onerror = () => {
+    ws?.close()
   }
 }
 
