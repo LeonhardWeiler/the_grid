@@ -1,17 +1,27 @@
 stages:
   - build
+  - docker
 
 variables:
-  GIT_STRATEGY: fetch
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:latest
 
 build:
   stage: build
   image: nixos/nix:latest
-
   script:
     - nix --extra-experimental-features "nix-command flakes" build
-
   artifacts:
     paths:
       - result/bin/the-grid
     expire_in: 1 week
+
+docker-build:
+  stage: docker
+  image: docker:24
+  services:
+    - docker:24-dind
+
+  script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build -t $IMAGE_TAG .
+    - docker push $IMAGE_TAG

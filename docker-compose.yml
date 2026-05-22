@@ -1,0 +1,10 @@
+version: "3.8"
+
+services:
+  the-grid:
+    image: registry.gitlab.com/your/project/the-grid:latest
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./data:/data
+    restart: unless-stopped

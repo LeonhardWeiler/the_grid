@@ -26,7 +26,7 @@ type Client struct {
 }
 
 func NewHub() *Hub {
-	p := NewPersistence("data/snapshot.json")
+	p := NewPersistence("/data/snapshot.json")
 
 	pixels, version, err := p.Load()
 	if err != nil {
