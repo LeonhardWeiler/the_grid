@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   the-grid:
-    image: registry.gitlab.com/your/project/the-grid:latest
+    image: registry.gitlab.com/htl-villach/it/classes/3ahitm-2025/sew/game/sj25_26_3ahitm_game_weilerl:latest
     ports:
       - "4000:4000"
     volumes:
