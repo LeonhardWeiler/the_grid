@@ -20,11 +20,14 @@ interface PixelMessage {
   cooldownEnd?: number
 }
 
+let manuallyClosed = false
+
 export function createWS(clientId: string) {
   let ws: WebSocket | null = null
   let version = Number(localStorage.getItem("version")) || 0
   let reconnectDelay = 1000
   let reconnectTimer: number | null = null
+  let isSynced = false
 
   function connect() {
     if (!window.navigator.onLine) {
@@ -37,6 +40,7 @@ export function createWS(clientId: string) {
     }
 
     ws = new WebSocket("ws://localhost:4000/ws")
+    isSynced = false
     connection.status = "connecting"
 
     ws.onopen = () => {
@@ -62,7 +66,6 @@ export function createWS(clientId: string) {
 
       switch (msg.type) {
         case "init": {
-          reconnectDelay = 1000
           pixels.clear()
           if (msg.pixels) {
             for (const key in msg.pixels) {
@@ -81,7 +84,8 @@ export function createWS(clientId: string) {
           }
 
           requestRender()
-          connection.status = "connected"
+          isSynced = false
+          reconnectDelay = 1000
           break
         }
 
@@ -103,7 +107,6 @@ export function createWS(clientId: string) {
         }
 
         case "sync": {
-          reconnectDelay = 1000
           if (msg.events) {
             for (const ev of msg.events) {
               pixels.set(`${ev.x}:${ev.y}`, ev.color)
@@ -119,7 +122,9 @@ export function createWS(clientId: string) {
           }
 
           requestRender()
+          isSynced = true
           connection.status = "connected"
+          reconnectDelay = 1000
           break
         }
 
@@ -133,10 +138,11 @@ export function createWS(clientId: string) {
     }
 
     ws.onclose = () => {
-      if (!window.navigator.onLine) {
+      if (manuallyClosed || !window.navigator.onLine) {
         connection.status = "disconnected"
         return
       }
+
       connection.status = "reconnecting"
 
       if (reconnectTimer !== null) {
@@ -164,12 +170,14 @@ export function createWS(clientId: string) {
   }
 
   window.addEventListener("online", () => {
+    manuallyClosed = false
     if (connection.status === "disconnected") {
       connect()
     }
   })
 
   window.addEventListener("offline", () => {
+    manuallyClosed = true
     connection.status = "disconnected"
   })
 
