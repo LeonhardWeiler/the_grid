@@ -27,6 +27,15 @@ export function createWS(clientId: string) {
   let reconnectTimer: number | null = null
 
   function connect() {
+    if (!window.navigator.onLine) {
+      connection.status = "disconnected"
+      return
+    }
+
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+      return
+    }
+
     ws = new WebSocket("ws://localhost:4000/ws")
     connection.status = "connecting"
 
@@ -123,31 +132,46 @@ export function createWS(clientId: string) {
       }
     }
 
-  ws.onclose = () => {
-    connection.status = "reconnecting"
+    ws.onclose = () => {
+      if (!window.navigator.onLine) {
+        connection.status = "disconnected"
+        return
+      }
+      connection.status = "reconnecting"
 
-    if (reconnectTimer !== null) {
-      clearTimeout(reconnectTimer)
-      reconnectTimer = null
+      if (reconnectTimer !== null) {
+        clearTimeout(reconnectTimer)
+        reconnectTimer = null
+      }
+
+      const jitter = Math.random() * 500
+      const delay = reconnectDelay + jitter
+
+      reconnectTimer = window.setTimeout(() => {
+        reconnectTimer = null
+        connect()
+      }, delay)
+
+      reconnectDelay = Math.min(
+        reconnectDelay * 2,
+        15000
+      )
     }
 
-    const delay = reconnectDelay
+    ws.onerror = () => {
+      ws?.close()
+    }
+  }
 
-    reconnectTimer = window.setTimeout(() => {
-      reconnectTimer = null
+  window.addEventListener("online", () => {
+    if (connection.status === "disconnected") {
       connect()
-    }, delay)
+    }
+  })
 
-    reconnectDelay = Math.min(
-      reconnectDelay * 2,
-      15000
-    )
-  }
-
-  ws.onerror = () => {
-    ws?.close()
-  }
-}
+  window.addEventListener("offline", () => {
+    connection.status = "disconnected"
+  })
 
   connect()
 
