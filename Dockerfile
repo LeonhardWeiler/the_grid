@@ -1,7 +1,7 @@
 FROM node:20 AS frontend
 
 WORKDIR /frontend
-COPY frontend/package.json frontend/bun.lockb* ./
+COPY package.json bun.lockb* ./
 RUN npm install -g bun
 RUN bun install
 
