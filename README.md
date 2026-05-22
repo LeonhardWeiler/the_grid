@@ -1,4 +1,4 @@
-# The Grid
+# 🟦 The Grid
 
 A minimal real-time pixel canvas inspired by r/place.
 
@@ -8,43 +8,49 @@ Built with:
 * WebSockets
 * TypeScript
 * HTML5 Canvas API
-* Bun (frontend tooling)
+* Vite (frontend tooling)
 * Nix Flakes (optional)
-* In-memory state (no database)
+* In-memory state with event log + snapshot persistence
 
 ---
 
-## Features
+## ✨ Features
 
 * Real-time pixel synchronization
-* Lightweight WebSocket server
+* Server-authoritative canvas state
+* Event-based sync (delta updates)
+* Snapshot fallback sync
+* Lightweight WebSocket protocol (JSON)
+* Reconnect with backoff + jitter
+* Rate limiting (cooldown per user)
 * Minimal frontend (no framework)
-* Single Go backend
-* No database required
-* Fast development setup
+* Stateless clients
+* Crash-safe persistence (snapshot-based)
 
 ---
 
-## Tech Stack
+## 🧱 Architecture
 
 ### Backend
 
 * Go
 * `github.com/coder/websocket`
 * `net/http`
-* File-based snapshot persistence (JSON)
+* In-memory pixel store (event log + ring buffer)
+* Snapshot persistence (JSON file)
+* Hub-based WebSocket broadcaster
 
 ### Frontend
 
 * TypeScript
-* Vite (bundler)
-* HTML5 Canvas
-* CSS
-* Bun (package manager / build tooling)
+* Vite
+* HTML5 Canvas API
+* Native WebSocket API
+* Connection state machine (sync-aware UI)
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
 ### With Nix (recommended)
 
@@ -62,7 +68,7 @@ bun run dev
 Open:
 
 ```text
-http://localhost:5173 (dev frontend)
+http://localhost:5173 (frontend)
 http://localhost:4000 (backend)
 ```
 
@@ -85,7 +91,7 @@ bun install
 
 ---
 
-## Development
+## 🧪 Development
 
 Run backend:
 
@@ -101,11 +107,9 @@ bun run dev
 
 ---
 
-## Build
+## 🏗 Build
 
-### Frontend build only
-
-Build frontend into static files:
+### Frontend build
 
 ```bash
 bun run build
@@ -119,56 +123,94 @@ public/dist
 
 ---
 
-### Full package build
-
-Build everything via Nix:
+### Full package build (Nix)
 
 ```bash
 bun run package
 ```
 
-(This runs frontend build first, then `nix build`)
+---
+
+## 📊 Current Status
+
+### Core System
+
+* [x] WebSocket server (Go)
+* [x] Real-time pixel sync
+* [x] Server-authoritative state
+* [x] Event-based delta sync
+* [x] Snapshot fallback sync
+* [x] Rate limiting / cooldown system
+* [x] Client reconnection logic (backoff + jitter)
+* [x] Connection state machine (frontend)
+* [x] Canvas rendering system (HTML5 Canvas)
 
 ---
 
-## Current Status
+### Persistence
 
-* [x] Go project setup
-* [x] Nix development environment
-* [x] Basic HTTP server
-* [x] WebSocket server
-* [x] Canvas rendering
-* [x] Click-to-paint interaction
-* [x] Shared pixel state
-* [x] Real-time synchronization
-* [x] Deployment setup
-* [x] Rate limiting / cooldown
-* [x] Connection state indicator (reconnect UI overlay)
-* [x] Server-authoritative pixel state (clients are stateless)
-* [ ] Auto Deployment via SSH
-* [ ] Multi-user testing
-* [ ] Binary WebSocket protocol
+* [x] In-memory pixel store
+* [x] Snapshot persistence (JSON)
+* [x] Startup state recovery
+* [ ] Atomic snapshot writes (tmp → rename)
+* [ ] Graceful shutdown persistence
+* [ ] Periodic autosave loop
 
 ---
 
-## Goals
+### Reliability
 
-The project focuses on:
-
-* simplicity
-* performance
-* minimalism
-* real-time communication
-* no frontend framework
-* low overhead
+* [x] Reconnect handling
+* [x] Offline detection (basic)
+* [ ] WebSocket heartbeat (ping/pong)
+* [ ] Full concurrency audit (final pass)
+* [ ] Cleanup of stale lastAction entries
 
 ---
 
-## Future Ideas
+### Performance
 
-* Pixel history
-* Chunk-based updates
-* Binary packet protocol
-* Redis PubSub scaling
-* Multi-server support
-* Custom Maps and Carinthia specific Map
+* [x] Efficient event buffer (ring buffer)
+* [ ] Snapshot optimization (reduce full copies)
+* [ ] Message batching (optional)
+* [ ] Binary WebSocket protocol (future)
+
+---
+
+### Scaling (Future)
+
+* [ ] Canvas chunking system
+* [ ] Multi-server architecture
+* [ ] Redis PubSub (optional)
+* [ ] Horizontal scaling support
+
+---
+
+### Deployment
+
+* [ ] Auto deployment via SSH
+* [ ] Production Docker setup (optional)
+
+---
+
+## 🎯 Design Goals
+
+* Simplicity over abstraction
+* Minimal dependencies
+* Real-time consistency
+* Server authority (clients are dumb)
+* Low-latency pixel sync
+* Easy local development
+* Hackable architecture
+
+---
+
+## 💡 Future Ideas
+
+* Pixel ownership / history tracking
+* Replay / timelapse system
+* Heatmap analytics
+* Mobile touch controls
+* Collaborative teams / factions
+* Custom maps (e.g. regional / thematic boards)
+* Competitive events / time-limited canvases
