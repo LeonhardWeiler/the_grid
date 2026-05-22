@@ -105,7 +105,6 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 
 			h.SetClientID(conn, msg.ClientID)
 
-			snap, version := h.Store.Snapshot()
 			events, ok := h.Store.GetSince(msg.LastVersion)
 
 			if ok && len(events) > 0 {
@@ -124,7 +123,7 @@ func HandleWS(h *Hub, w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
-			snap, version = h.Store.Snapshot()
+			snap, version := h.Store.Snapshot()
 
 			if err := handleInit(
 				h,

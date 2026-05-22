@@ -61,7 +61,10 @@ func (h *Hub) Add(c *websocket.Conn) *Client {
 	h.mu.Unlock()
 
 	go func(cl *Client) {
-		defer cl.conn.Close(websocket.StatusNormalClosure, "")
+		defer func() {
+			h.RemoveClient(cl.conn)
+			cl.conn.Close(websocket.StatusNormalClosure, "")
+		}()
 
 		for {
 			select {
@@ -98,14 +101,13 @@ func (h *Hub) Broadcast(msg []byte) {
 		select {
 		case client.send <- msg:
 		default:
-			h.RemoveClient(client.conn)
+			go h.RemoveClient(client.conn)
 		}
 	}
 }
 
 func (h *Hub) SendToClientID(id string, msg []byte) {
 	h.mu.RLock()
-
 	clientSet, ok := h.idToClients[id]
 	if !ok {
 		h.mu.RUnlock()
@@ -113,18 +115,16 @@ func (h *Hub) SendToClientID(id string, msg []byte) {
 	}
 
 	clients := make([]*Client, 0, len(clientSet))
-
 	for client := range clientSet {
 		clients = append(clients, client)
 	}
-
 	h.mu.RUnlock()
 
 	for _, client := range clients {
 		select {
 		case client.send <- msg:
 		default:
-			go h.RemoveClient(client.conn)
+			h.RemoveClient(client.conn)
 		}
 	}
 }
@@ -219,7 +219,7 @@ func (h *Hub) RemoveClient(conn *websocket.Conn) {
 
 	if client != nil {
 		client.cancel()
-		close(client.send)
+		client.send = nil
 	}
 }
 
