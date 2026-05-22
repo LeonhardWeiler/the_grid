@@ -85,6 +85,7 @@ export function createWS(clientId: string) {
 
           requestRender()
           isSynced = false
+          connection.status = "connected"
           reconnectDelay = 1000
           break
         }
