@@ -99,7 +99,9 @@ func (s *PixelStore) Snapshot() (map[string]string, int) {
 		copy[k] = v
 	}
 
-	return copy, s.version
+	version := s.version
+
+	return copy, version
 }
 
 func (s *PixelStore) LoadSnapshot(
