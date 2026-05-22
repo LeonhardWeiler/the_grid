@@ -27,7 +27,7 @@ func main() {
 
 	log.Println("Server running on :4000")
 
-	if err := http.ListenAndServe(":4000", nil); err != nil {
+	if err := http.ListenAndServe("0.0.0.0:4000", nil); err != nil {
 		log.Fatal(err)
 	}
 }

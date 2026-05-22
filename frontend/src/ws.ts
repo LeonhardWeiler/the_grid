@@ -39,7 +39,7 @@ export function createWS(clientId: string) {
       return
     }
 
-    ws = new WebSocket("ws://localhost:4000/ws")
+    ws = new WebSocket(`ws://${window.location.hostname}:4000/ws`)
     isSynced = false
     connection.status = "connecting"
 
