@@ -38,6 +38,16 @@ canvas.addEventListener("click", (e) => {
     world.y >= GRID_SIZE
   ) return
 
+  if (
+    state.selectedPixel &&
+    state.selectedPixel.x === world.x &&
+    state.selectedPixel.y === world.y
+  ) {
+    console.log("selected pixel")
+    confirmPixel()
+    return
+  }
+
   state.selectedPixel = world
   updateButtonUI()
   requestRender()

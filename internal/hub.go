@@ -4,6 +4,7 @@ import (
 	"context"
 	"sync"
 	"time"
+	"os"
 
 	"github.com/coder/websocket"
 )
@@ -26,7 +27,13 @@ type Client struct {
 }
 
 func NewHub() *Hub {
-	p := NewPersistence("/data/snapshot.json")
+
+	err := os.MkdirAll("./data", 0755)
+	if err != nil {
+		panic(err)
+	}
+
+	p := NewPersistence("./data/snapshot.json")
 
 	pixels, version, err := p.Load()
 	if err != nil {
@@ -38,7 +45,7 @@ func NewHub() *Hub {
 
 	return &Hub{
 		clients:     make(map[*websocket.Conn]*Client),
-		Store: 			 store,
+		Store:       store,
 		lastAction:  make(map[string]int64),
 		connToID:    make(map[*websocket.Conn]string),
 		idToClients: make(map[string]map[*Client]struct{}),
