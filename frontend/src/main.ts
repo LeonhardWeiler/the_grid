@@ -43,7 +43,6 @@ canvas.addEventListener("click", (e) => {
     state.selectedPixel.x === world.x &&
     state.selectedPixel.y === world.y
   ) {
-    console.log("selected pixel")
     confirmPixel()
     return
   }

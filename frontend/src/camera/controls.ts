@@ -69,7 +69,7 @@ export function setupControls(): void {
     state.hoverPixel = world
 
     const centered = toCenteredCoords(world.x, world.y)
-    coordsEl.textContent = `${centered.x} / ${centered.y}`
+    coordsEl.textContent = `${centered.x} | ${centered.y}`
 
     requestRender()
   })

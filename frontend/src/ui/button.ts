@@ -28,5 +28,5 @@ export function updateButtonUI(): void {
     state.selectedPixel.y
   )
 
-  cooldownEl.textContent = `Click to accept (${centered.x} / ${centered.y})`
+  cooldownEl.textContent = `Click to accept Pixel (${centered.x} | ${centered.y})`
 }
