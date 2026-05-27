@@ -1,4 +1,4 @@
-# 🟦 The Grid
+# The Grid
 
 A minimal real-time pixel canvas inspired by r/place.
 
@@ -14,7 +14,7 @@ Built with:
 
 ---
 
-## ✨ Features
+## Features
 
 * Real-time pixel synchronization
 * Server-authoritative canvas state
@@ -29,7 +29,7 @@ Built with:
 
 ---
 
-## 🧱 Architecture
+## Architecture
 
 ### Backend
 
@@ -50,7 +50,7 @@ Built with:
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### With Nix (recommended)
 
@@ -92,7 +92,7 @@ bun install
 
 ---
 
-## 🧪 Development
+## Development
 
 Run backend:
 
@@ -108,7 +108,7 @@ bun run dev
 
 ---
 
-## 🏗 Build
+## Build
 
 ### Frontend build
 
@@ -132,7 +132,7 @@ bun run package
 
 ---
 
-## 📊 Current Status
+## Current Status
 
 ### Core System
 
@@ -194,7 +194,7 @@ bun run package
 
 ---
 
-## 🎯 Design Goals
+## Design Goals
 
 * Simplicity over abstraction
 * Minimal dependencies
@@ -206,7 +206,7 @@ bun run package
 
 ---
 
-## 💡 Future Ideas
+## Future Ideas
 
 * Pixel ownership / history tracking
 * Replay / timelapse system
