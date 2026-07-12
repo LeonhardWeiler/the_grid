@@ -1,241 +1,641 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>The Grid — Project Health Report</title>
-<style>
-  :root {
-    --bg: #0d1117;
-    --card: #161b22;
-    --card-border: #30363d;
-    --text: #e6edf3;
-    --muted: #8b949e;
-    --accent: #58a6ff;
-    --crit: #f85149;
-    --high: #ff7b52;
-    --med: #d29922;
-    --low: #3fb950;
-    --info: #6e7681;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    line-height: 1.55;
-    padding: 2rem 1rem 4rem;
-  }
-  .wrap { max-width: 940px; margin: 0 auto; }
-  h1 { font-size: 1.9rem; margin: 0 0 .3rem; }
-  .meta { color: var(--muted); font-size: .9rem; margin-bottom: 1.5rem; }
-  .meta code { color: var(--accent); }
-  .summary {
-    display: flex; flex-wrap: wrap; gap: .6rem; margin: 1.2rem 0 2rem;
-  }
-  .pill {
-    display: flex; align-items: center; gap: .45rem;
-    background: var(--card); border: 1px solid var(--card-border);
-    border-radius: 999px; padding: .35rem .85rem; font-size: .85rem;
-  }
-  .pill b { font-size: 1rem; }
-  .dot { width: .7rem; height: .7rem; border-radius: 50%; display: inline-block; }
-  .d-crit { background: var(--crit); }
-  .d-high { background: var(--high); }
-  .d-med  { background: var(--med); }
-  .d-low  { background: var(--low); }
-  .d-info { background: var(--info); }
-  h2 {
-    font-size: 1.3rem; margin: 2.4rem 0 1rem;
-    padding-bottom: .4rem; border-bottom: 1px solid var(--card-border);
-  }
-  .toc { background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 1rem 1.3rem; }
-  .toc ul { margin: .3rem 0 0; padding-left: 1.2rem; }
-  .toc a { color: var(--accent); text-decoration: none; }
-  .toc a:hover { text-decoration: underline; }
-  .card {
-    background: var(--card); border: 1px solid var(--card-border);
-    border-left-width: 4px; border-radius: 8px;
-    padding: 1rem 1.2rem; margin: .9rem 0;
-  }
-  .card.crit { border-left-color: var(--crit); }
-  .card.high { border-left-color: var(--high); }
-  .card.med  { border-left-color: var(--med); }
-  .card.low  { border-left-color: var(--low); }
-  .card.info { border-left-color: var(--info); }
-  .card h3 { margin: 0 0 .5rem; font-size: 1.02rem; display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
-  .badge {
-    font-size: .68rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: .04em; padding: .15rem .5rem; border-radius: 5px; color: #0d1117;
-  }
-  .b-crit { background: var(--crit); }
-  .b-high { background: var(--high); }
-  .b-med  { background: var(--med); }
-  .b-low  { background: var(--low); }
-  .b-info { background: var(--info); color: #e6edf3; }
-  .id { color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8rem; }
-  .loc { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .82rem; color: var(--accent); background: #0d1117; padding: .1rem .4rem; border-radius: 4px; }
-  .card p { margin: .5rem 0; }
-  .rec { margin-top: .6rem; padding-top: .6rem; border-top: 1px dashed var(--card-border); font-size: .92rem; }
-  .rec b { color: var(--low); }
-  .legend { color: var(--muted); font-size: .82rem; margin-top: 1rem; }
-  .legend span { margin-right: 1rem; white-space: nowrap; }
-  ul.tight { margin: .3rem 0; }
-</style>
-</head>
-<body>
-<div class="wrap">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Grid — Project Health Report</title>
+    <style>
+      :root {
+        --bg: #0d1117;
+        --card: #161b22;
+        --card-border: #30363d;
+        --text: #e6edf3;
+        --muted: #8b949e;
+        --accent: #58a6ff;
+        --crit: #f85149;
+        --high: #ff7b52;
+        --med: #d29922;
+        --low: #3fb950;
+        --info: #6e7681;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+        line-height: 1.55;
+        padding: 2rem 1rem 4rem;
+      }
+      .wrap {
+        max-width: 940px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 1.9rem;
+        margin: 0 0 0.3rem;
+      }
+      .meta {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+      }
+      .meta code {
+        color: var(--accent);
+      }
+      .summary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        margin: 1.2rem 0 2rem;
+      }
+      .pill {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        background: var(--card);
+        border: 1px solid var(--card-border);
+        border-radius: 999px;
+        padding: 0.35rem 0.85rem;
+        font-size: 0.85rem;
+      }
+      .pill b {
+        font-size: 1rem;
+      }
+      .dot {
+        width: 0.7rem;
+        height: 0.7rem;
+        border-radius: 50%;
+        display: inline-block;
+      }
+      .d-crit {
+        background: var(--crit);
+      }
+      .d-high {
+        background: var(--high);
+      }
+      .d-med {
+        background: var(--med);
+      }
+      .d-low {
+        background: var(--low);
+      }
+      .d-info {
+        background: var(--info);
+      }
+      h2 {
+        font-size: 1.3rem;
+        margin: 2.4rem 0 1rem;
+        padding-bottom: 0.4rem;
+        border-bottom: 1px solid var(--card-border);
+      }
+      .toc {
+        background: var(--card);
+        border: 1px solid var(--card-border);
+        border-radius: 10px;
+        padding: 1rem 1.3rem;
+      }
+      .toc ul {
+        margin: 0.3rem 0 0;
+        padding-left: 1.2rem;
+      }
+      .toc a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      .toc a:hover {
+        text-decoration: underline;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--card-border);
+        border-left-width: 4px;
+        border-radius: 8px;
+        padding: 1rem 1.2rem;
+        margin: 0.9rem 0;
+      }
+      .card.crit {
+        border-left-color: var(--crit);
+      }
+      .card.high {
+        border-left-color: var(--high);
+      }
+      .card.med {
+        border-left-color: var(--med);
+      }
+      .card.low {
+        border-left-color: var(--low);
+      }
+      .card.info {
+        border-left-color: var(--info);
+      }
+      .card h3 {
+        margin: 0 0 0.5rem;
+        font-size: 1.02rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+      }
+      .badge {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: 0.15rem 0.5rem;
+        border-radius: 5px;
+        color: #0d1117;
+      }
+      .b-crit {
+        background: var(--crit);
+      }
+      .b-high {
+        background: var(--high);
+      }
+      .b-med {
+        background: var(--med);
+      }
+      .b-low {
+        background: var(--low);
+      }
+      .b-info {
+        background: var(--info);
+        color: #e6edf3;
+      }
+      .id {
+        color: var(--muted);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.8rem;
+      }
+      .loc {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.82rem;
+        color: var(--accent);
+        background: #0d1117;
+        padding: 0.1rem 0.4rem;
+        border-radius: 4px;
+      }
+      .card p {
+        margin: 0.5rem 0;
+      }
+      .rec {
+        margin-top: 0.6rem;
+        padding-top: 0.6rem;
+        border-top: 1px dashed var(--card-border);
+        font-size: 0.92rem;
+      }
+      .rec b {
+        color: var(--low);
+      }
+      .legend {
+        color: var(--muted);
+        font-size: 0.82rem;
+        margin-top: 1rem;
+      }
+      .legend span {
+        margin-right: 1rem;
+        white-space: nowrap;
+      }
+      ul.tight {
+        margin: 0.3rem 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>The Grid — Project Health Report</h1>
+      <div class="meta">
+        Momentaufnahme · Datum: <code>2026-07-02</code> · Branch:
+        <code>main</code> · Scan: Go-Backend (<code>internal/</code>,
+        <code>main.go</code>) + TS-Frontend (<code>frontend/src/</code>) +
+        Deploy-Config
+      </div>
 
-  <h1>The Grid — Project Health Report</h1>
-  <div class="meta">
-    Momentaufnahme · Datum: <code>2026-07-02</code> · Branch: <code>main</code> ·
-    Scan: Go-Backend (<code>internal/</code>, <code>main.go</code>) + TS-Frontend (<code>frontend/src/</code>) + Deploy-Config
-  </div>
+      <div class="summary">
+        <span class="pill"
+          ><span class="dot d-crit"></span><b>2</b> kritisch</span
+        >
+        <span class="pill"><span class="dot d-high"></span><b>3</b> hoch</span>
+        <span class="pill"><span class="dot d-med"></span><b>5</b> mittel</span>
+        <span class="pill"
+          ><span class="dot d-low"></span><b>3</b> niedrig</span
+        >
+        <span class="pill"><span class="dot d-info"></span><b>2</b> info</span>
+      </div>
 
-  <div class="summary">
-    <span class="pill"><span class="dot d-crit"></span><b>2</b> kritisch</span>
-    <span class="pill"><span class="dot d-high"></span><b>3</b> hoch</span>
-    <span class="pill"><span class="dot d-med"></span><b>5</b> mittel</span>
-    <span class="pill"><span class="dot d-low"></span><b>3</b> niedrig</span>
-    <span class="pill"><span class="dot d-info"></span><b>2</b> info</span>
-  </div>
+      <div class="toc">
+        <strong>Inhalt</strong>
+        <ul>
+          <li><a href="#open">1 · Offene Findings</a></li>
+          <li><a href="#strong">2 · Was schon stark ist</a></li>
+          <li><a href="#decided">3 · Bewusst entschieden</a></li>
+        </ul>
+        <div class="legend">
+          <span><span class="dot d-crit"></span> kritisch</span>
+          <span><span class="dot d-high"></span> hoch</span>
+          <span><span class="dot d-med"></span> mittel</span>
+          <span><span class="dot d-low"></span> niedrig</span>
+          <span><span class="dot d-info"></span> info</span>
+        </div>
+      </div>
 
-  <div class="toc">
-    <strong>Inhalt</strong>
-    <ul>
-      <li><a href="#open">1 · Offene Findings</a></li>
-      <li><a href="#strong">2 · Was schon stark ist</a></li>
-      <li><a href="#decided">3 · Bewusst entschieden</a></li>
-    </ul>
-    <div class="legend">
-      <span><span class="dot d-crit"></span> kritisch</span>
-      <span><span class="dot d-high"></span> hoch</span>
-      <span><span class="dot d-med"></span> mittel</span>
-      <span><span class="dot d-low"></span> niedrig</span>
-      <span><span class="dot d-info"></span> info</span>
+      <h2 id="open">1 · Offene Findings</h2>
+
+      <div class="card crit">
+        <h3>
+          <span class="badge b-crit">kritisch</span> Grid-Größe zwischen
+          Frontend und Backend inkonsistent <span class="id">CRIT-1</span>
+        </h3>
+        <p>
+          <span class="loc">frontend/src/camera/camera.ts:3</span> setzt
+          <code>GRID_SIZE = 1000</code>, das Backend
+          <span class="loc">internal/config.go:7</span> jedoch
+          <code>GridSize = 512</code>.
+        </p>
+        <p>
+          Das Frontend zeigt und erlaubt Klicks auf ein 1000×1000-Raster. Klicks
+          außerhalb 0–511 werden per <code>set_pixel</code> gesendet, vom
+          Backend in <code>ValidCoords</code> (<span class="loc"
+            >internal/validate.go:9</span
+          >) still verworfen — kein Fehler, kein Feedback, kein Cooldown. Über
+          die Hälfte der sichtbaren Fläche ist unbrauchbar. Zusätzlich rechnet
+          <code>toCenteredCoords</code> mit Mittelpunkt 500 statt 256, wodurch
+          die angezeigten Koordinaten nicht zum echten Raster passen.
+        </p>
+        <div class="rec">
+          <b>Empfehlung:</b> Eine einzige Quelle der Wahrheit für die
+          Grid-Größe. Backend soll die Grid-Größe beim <code>init</code> an den
+          Client senden, das Frontend nutzt diesen Wert statt einer eigenen
+          Konstante.
+        </div>
+      </div>
+
+      <div class="card crit">
+        <h3>
+          <span class="badge b-crit">kritisch</span> Nach Reload bleibt die
+          Canvas nahezu leer (Delta-Sync ohne Pixel-Persistenz)
+          <span class="id">CRIT-2</span>
+        </h3>
+        <p>
+          <span class="loc">frontend/src/ws.ts:27,80,118</span> persistiert nur
+          <code>version</code> in <code>localStorage</code>, nicht die
+          Pixel-Daten. Beim Reload ist die <code>pixels</code>-Map leer, aber es
+          wird <code>init_client</code> mit der alten, hohen
+          <code>lastVersion</code> gesendet.
+        </p>
+        <p>
+          Das Backend (<span class="loc">internal/ws.go:108</span>) liefert dann
+          nur Deltas seit dieser Version (<code>sync</code>), sofern der
+          Ring-Buffer sie noch abdeckt. Der Client wendet diese wenigen Events
+          auf eine leere Map an → es erscheinen nur die seit dem letzten Besuch
+          geänderten Pixel, der Rest der Canvas fehlt, bis er zufällig
+          überschrieben wird.
+        </p>
+        <div class="rec">
+          <b>Empfehlung:</b> Entweder beim Reconnect/Reload immer einen
+          vollständigen Snapshot anfordern (<code>lastVersion = 0</code>, wenn
+          keine lokalen Pixel vorliegen), oder die Pixel-Map ebenfalls lokal
+          persistieren. Delta-Sync nur, wenn tatsächlich ein konsistenter
+          lokaler Zustand existiert.
+        </div>
+      </div>
+
+      <div class="card high">
+        <h3>
+          <span class="badge b-high">hoch</span> docker-compose Volume zeigt auf
+          falschen Pfad — Persistenz geht verloren
+          <span class="id">HIGH-1</span>
+        </h3>
+        <p>
+          <span class="loc">docker-compose.yml:9</span> mountet
+          <code>./data:/data</code>. Der Server schreibt aber nach
+          <code>./data/snapshot.json</code> relativ zum WORKDIR
+          <code>/app</code> (<span class="loc">internal/hub.go:36</span>,
+          <span class="loc">Dockerfile:21</span>), also nach
+          <code>/app/data</code>.
+        </p>
+        <p>
+          Der gemountete Volume-Pfad <code>/data</code> wird nie beschrieben;
+          die Snapshots landen im ephemeren Container-Layer und gehen bei jedem
+          <code>docker compose up --force-recreate</code> verloren.
+        </p>
+        <div class="rec">
+          <b>Empfehlung:</b> Volume auf <code>./data:/app/data</code> ändern
+          (oder den Snapshot-Pfad im Server auf
+          <code>/data</code> konfigurierbar machen und dort hin schreiben).
+        </div>
+      </div>
+
+      <div class="card high">
+        <h3>
+          <span class="badge b-high">hoch</span> WebSocket-Origin-Whitelist nur
+          für localhost — Produktion blockiert <span class="id">HIGH-2</span>
+        </h3>
+        <p>
+          <span class="loc">internal/ws.go:55</span> erlaubt als
+          <code>OriginPatterns</code> ausschließlich
+          <code>http://localhost:5173</code> und
+          <code>http://localhost:4000</code>.
+        </p>
+        <p>
+          Beim Deployment (Docker, Port 4000) wird die App über eine Domain/IP
+          aufgerufen; die Origin lautet dann z. B.
+          <code>http://&lt;host&gt;:4000</code> und ist nicht in der Liste →
+          <code>websocket.Accept</code> lehnt mit 403 ab. Alle WS-Verbindungen
+          scheitern, die App bleibt im „Connecting…"-Zustand hängen.
+        </p>
+        <div class="rec">
+          <b>Empfehlung:</b> Erlaubte Origins über eine Env-Variable
+          konfigurierbar machen und in der Deploy-Konfiguration den echten Host
+          eintragen.
+        </div>
+      </div>
+
+      <div class="card high">
+        <h3>
+          <span class="badge b-high">hoch</span> Cooldown per selbstgewählter
+          clientId trivial umgehbar <span class="id">HIGH-3</span>
+        </h3>
+        <p>
+          Das Rate-Limiting (<span class="loc">internal/hub.go:178</span>)
+          verwendet die vom Client gelieferte <code>clientId</code> als
+          Schlüssel (<span class="loc">internal/ws.go:98</span>). Ein Client
+          kann für jeden Pixel eine neue zufällige, regex-konforme ID senden und
+          so den 5-Sekunden-Cooldown komplett aushebeln.
+        </p>
+        <div class="rec">
+          <b>Empfehlung:</b> Cooldown zusätzlich (oder primär) an eine
+          serverseitige Größe binden, z. B. Remote-IP der Verbindung. Client-ID
+          bleibt für Session-Zuordnung, ist aber nicht allein
+          rate-limit-tragend.
+        </div>
+      </div>
+
+      <div class="card med">
+        <h3>
+          <span class="badge b-med">mittel</span> <code>lastAction</code>-Map
+          wächst unbegrenzt <span class="id">MED-1</span>
+        </h3>
+        <p>
+          <span class="loc">internal/hub.go:239</span> definiert
+          <code>CleanupLastAction</code>, aber die Funktion wird nirgends
+          aufgerufen. Für jede jemals gesehene <code>clientId</code> bleibt ein
+          Eintrag dauerhaft im Speicher — ein langsames, unbegrenztes Leck (in
+          Verbindung mit HIGH-3 sogar beschleunigt).
+        </p>
+        <div class="rec">
+          <b>Empfehlung:</b> Cleanup periodisch per Ticker (analog zu
+          <code>StartAutosave</code>) mit einer Max-Alters-Schwelle aufrufen.
+        </div>
+      </div>
+
+      <div class="card med">
+        <h3>
+          <span class="badge b-med">mittel</span> Kein WebSocket-Heartbeat /
+          kein Read-Deadline <span class="id">MED-2</span>
+        </h3>
+        <p>
+          <span class="loc">internal/ws.go:78</span> liest mit einem nie
+          ablaufenden Context; es gibt kein Ping/Pong und keinen Read-Timeout.
+          Tote Verbindungen (Netzwerkabbruch ohne Close-Frame) bleiben samt
+          Goroutine und Map-Einträgen hängen.
+        </p>
+        <div class="rec">
+          <b>Empfehlung:</b> Periodische Pings mit Pong-Deadline einführen oder
+          pro Read einen Timeout-Context setzen; bei Ausbleiben Verbindung
+          schließen. In README/CLAUDE.md bereits als geplant vermerkt.
+        </div>
+      </div>
+
+      <div class="card med">
+        <h3>
+          <span class="badge b-med">mittel</span> Docker-Frontend-Build
+          ignoriert <code>vite.config.ts</code> und hat kein bun-Lockfile
+          <span class="id">MED-3</span>
+        </h3>
+        <p>
+          <span class="loc">Dockerfile:1-9</span> kopiert nur
+          <code>frontend/</code> und die Root-<code>package.json</code>, aber
+          nicht die <code>vite.config.ts</code> (liegt im Repo-Root). Der Build
+          läuft daher mit Vite-Defaults statt mit
+          <code>root:"frontend"</code>/<code>outDir:"../public/dist"</code> — er
+          funktioniert nur zufällig, weil die Defaults zum Copy-Layout passen.
+          Zudem verweist <code>COPY … bun.lockb*</code> auf eine nicht
+          vorhandene Lockdatei (Repo nutzt <code>package-lock.json</code>),
+          sodass <code>bun install</code> ohne Lock nicht reproduzierbar
+          auflöst.
+        </p>
+        <div class="rec">
+          <b>Empfehlung:</b> Build-Kontext und Vite-Config konsistent halten
+          (Config mitkopieren oder Frontend-Build vollständig in
+          <code>frontend/</code> kapseln) und ein echtes Lockfile
+          committen/kopieren.
+        </div>
+      </div>
+
+      <div class="card med">
+        <h3>
+          <span class="badge b-med">mittel</span> Keine Touch-Bedienung &
+          fehlendes Viewport-Meta — auf Mobil unbenutzbar
+          <span class="id">MED-4</span>
+        </h3>
+        <p>
+          <span class="loc">frontend/src/camera/controls.ts</span> registriert
+          ausschließlich <code>mousedown/mousemove/wheel</code> — kein
+          <code>touchstart/touchmove</code> und kein Pinch-Zoom.
+          <span class="loc">frontend/index.html</span> hat kein
+          <code>viewport</code>-Meta-Tag. Auf Touch-Geräten lässt sich weder
+          pannen noch zoomen noch zuverlässig ein Pixel setzen.
+        </p>
+        <div class="rec">
+          <b>Empfehlung:</b> Touch-/Pointer-Events für Pan &amp; Pinch-Zoom
+          ergänzen und ein <code>&lt;meta name="viewport"&gt;</code> setzen. In
+          README als „Mobile touch controls" bereits als Idee gelistet.
+        </div>
+      </div>
+
+      <div class="card med">
+        <h3>
+          <span class="badge b-med">mittel</span> Kein Nutzer-Feedback bei
+          abgelehntem Pixel <span class="id">MED-5</span>
+        </h3>
+        <p>
+          Wird ein <code>set_pixel</code> serverseitig verworfen (out of bounds,
+          ungültige Farbe, Cooldown aktiv), erfolgt keinerlei Antwort. Das
+          Frontend setzt <code>selectedPixel</code> optimistisch zurück (<span
+            class="loc"
+            >frontend/src/main.ts:67</span
+          >) und der Nutzer erhält keine Rückmeldung, warum nichts passiert ist.
+        </p>
+        <div class="rec">
+          <b>Empfehlung:</b> Eine kompakte
+          <code>rejected</code>/<code>error</code>-Nachricht vom Server senden
+          und im UI kurz anzeigen (z. B. Toast oder rot blinkender
+          Cooldown-Button).
+        </div>
+      </div>
+
+      <div class="card low">
+        <h3>
+          <span class="badge b-low">niedrig</span>
+          <code>MaxMessageSize</code> ungenutzt — kein Read-Limit gesetzt
+          <span class="id">LOW-1</span>
+        </h3>
+        <p>
+          <span class="loc">internal/config.go:9</span> definiert
+          <code>MaxMessageSize = 1024</code>, aber die Konstante wird nie
+          verwendet; auf der Verbindung ist kein
+          <code>SetReadLimit</code> gesetzt, es gilt still das
+          Bibliotheks-Default (32 KiB).
+        </p>
+        <div class="rec">
+          <b>Empfehlung:</b> <code>conn.SetReadLimit(MaxMessageSize)</code> nach
+          dem Accept setzen oder die tote Konstante entfernen.
+        </div>
+      </div>
+
+      <div class="card low">
+        <h3>
+          <span class="badge b-low">niedrig</span> Toter Code &amp; doppelte
+          Verzeichnis-Anlage <span class="id">LOW-2</span>
+        </h3>
+        <p>
+          <span class="loc">internal/hub.go:252</span>
+          <code>StartPersistenceLoop</code> wird nie aufgerufen (Autosave läuft
+          über <code>autosave.go</code>). Zusätzlich legen sowohl
+          <code>NewHub</code> (<span class="loc">internal/hub.go:31</span>) als
+          auch <code>NewPersistence</code> (<span class="loc"
+            >internal/persistence.go:20</span
+          >) das <code>data</code>-Verzeichnis an — mit uneinheitlichem Pfad
+          (<code>./data</code> vs. <code>data</code>).
+        </p>
+        <div class="rec">
+          <b>Empfehlung:</b> Ungenutzte Funktion entfernen und die
+          Verzeichnis-Anlage an einer Stelle bündeln.
+        </div>
+      </div>
+
+      <div class="card low">
+        <h3>
+          <span class="badge b-low">niedrig</span> Accessibility der Palette und
+          Canvas <span class="id">LOW-3</span>
+        </h3>
+        <p>
+          <span class="loc">frontend/index.html:15-54</span>: die Farb-Buttons
+          haben keinen zugänglichen Namen (nur Hintergrundfarbe), die Canvas ist
+          nicht per Tastatur bedienbar und die aktive Farbe wird nur visuell
+          (Klasse <code>active</code>) markiert.
+        </p>
+        <div class="rec">
+          <b>Empfehlung:</b> <code>aria-label</code> mit Farbnamen,
+          <code>aria-pressed</code> für die aktive Farbe und optionale
+          Tastatur-Navigation für die Pixel-Auswahl ergänzen.
+        </div>
+      </div>
+
+      <div class="card info">
+        <h3>
+          <span class="badge b-info">info</span> README-Status-Checkboxen
+          veraltet <span class="id">INFO-1</span>
+        </h3>
+        <p>
+          <span class="loc">README.md:156-166</span> markiert „Atomic snapshot
+          writes", „Graceful shutdown persistence" und „Periodic autosave loop"
+          als offen (<code>[ ]</code>). Alle drei sind längst implementiert
+          (<span class="loc">internal/persistence.go:41-47</span> tmp→rename,
+          <span class="loc">internal/autosave.go</span> Autosave +
+          Shutdown-Save).
+        </p>
+        <div class="rec">
+          <b>Empfehlung:</b> Status im README auf den echten Stand bringen.
+        </div>
+      </div>
+
+      <div class="card info">
+        <h3>
+          <span class="badge b-info">info</span> Keine automatisierten Tests
+          <span class="id">INFO-2</span>
+        </h3>
+        <p>
+          Im gesamten Repo existieren weder Go- noch Frontend-Tests. Kritische
+          Kernlogik (Ring-Buffer in <code>store.go</code>,
+          <code>GetSince</code>-Grenzfälle, Cooldown, Koordinaten-Umrechnung)
+          ist ungeschützt gegen Regressionen — gerade die Sync-Grenzfälle aus
+          CRIT-2 wären hier auffällig geworden.
+        </p>
+        <div class="rec">
+          <b>Empfehlung:</b> Mit gezielten Unit-Tests für
+          <code>PixelStore</code> (Ring-Wraparound,
+          <code>GetSince</code> unter/über dem Fenster) und die
+          Koordinaten-Utils starten; im CI ein <code>go test ./...</code>-Gate
+          ergänzen.
+        </div>
+      </div>
+
+      <h2 id="strong">2 · Was schon stark ist</h2>
+      <div class="card low">
+        <ul class="tight">
+          <li>
+            <b>Atomare Snapshot-Writes:</b> <code>persistence.go</code> schreibt
+            via <code>tmp → rename</code>, kein Halb-Zustand bei Crash.
+          </li>
+          <li>
+            <b>Sauberes Shutdown &amp; Autosave:</b>
+            <code>autosave.go</code> deckt periodisches Speichern und
+            SIGINT/SIGTERM-Save ab.
+          </li>
+          <li>
+            <b>Server-Autorität konsequent:</b> alle Pixel werden serverseitig
+            validiert (<code>ValidCoords/ValidColor/ValidClientID</code>),
+            Clients senden nur Intents.
+          </li>
+          <li>
+            <b>Effizienter Ring-Buffer</b> mit fester Kapazität verhindert
+            unbegrenztes Event-Wachstum.
+          </li>
+          <li>
+            <b>Robustes Reconnect:</b> exponentielles Backoff + Jitter +
+            Online/Offline-Handling im WS-Client.
+          </li>
+          <li>
+            <b>Saubere Nebenläufigkeit:</b> durchgängige
+            <code>RWMutex</code>-Nutzung im Hub, per-Client Send-Channel mit
+            Drop bei Überlauf.
+          </li>
+          <li>
+            <b>Grüne Gates:</b> <code>go vet</code>, <code>go build</code> und
+            <code>tsc --noEmit</code> laufen fehlerfrei; TS-Config ist strikt
+            (<code>strict</code>, <code>noUncheckedIndexedAccess</code>).
+          </li>
+        </ul>
+      </div>
+
+      <h2 id="decided">3 · Bewusst entschieden</h2>
+      <div class="card info">
+        <ul class="tight">
+          <li>
+            <b>In-Memory-Store + JSON-Snapshot</b> statt Datenbank — passt zum
+            Ziel „hackbar &amp; einfach", bewusst nicht auf Skalierung
+            optimiert.
+          </li>
+          <li>
+            <b>Feste 6-Farben-Palette</b> (<code>config.go</code> /
+            <code>index.html</code>) — minimalistisch im r/place-Geist.
+          </li>
+          <li>
+            <b>Text-basiertes JSON-WS-Protokoll</b> statt Binärprotokoll —
+            Lesbarkeit über Performance (Binär ist als Zukunft notiert).
+          </li>
+          <li>
+            <b>Kein Frontend-Framework</b> — direkter Canvas + TypeScript als
+            ausdrückliches Designprinzip.
+          </li>
+        </ul>
+      </div>
     </div>
-  </div>
-
-  <h2 id="open">1 · Offene Findings</h2>
-
-  <div class="card crit">
-    <h3><span class="badge b-crit">kritisch</span> Grid-Größe zwischen Frontend und Backend inkonsistent <span class="id">CRIT-1</span></h3>
-    <p><span class="loc">frontend/src/camera/camera.ts:3</span> setzt <code>GRID_SIZE = 1000</code>, das Backend <span class="loc">internal/config.go:7</span> jedoch <code>GridSize = 512</code>.</p>
-    <p>Das Frontend zeigt und erlaubt Klicks auf ein 1000×1000-Raster. Klicks außerhalb 0–511 werden per <code>set_pixel</code> gesendet, vom Backend in <code>ValidCoords</code> (<span class="loc">internal/validate.go:9</span>) still verworfen — kein Fehler, kein Feedback, kein Cooldown. Über die Hälfte der sichtbaren Fläche ist unbrauchbar. Zusätzlich rechnet <code>toCenteredCoords</code> mit Mittelpunkt 500 statt 256, wodurch die angezeigten Koordinaten nicht zum echten Raster passen.</p>
-    <div class="rec"><b>Empfehlung:</b> Eine einzige Quelle der Wahrheit für die Grid-Größe. Backend soll die Grid-Größe beim <code>init</code> an den Client senden, das Frontend nutzt diesen Wert statt einer eigenen Konstante.</div>
-  </div>
-
-  <div class="card crit">
-    <h3><span class="badge b-crit">kritisch</span> Nach Reload bleibt die Canvas nahezu leer (Delta-Sync ohne Pixel-Persistenz) <span class="id">CRIT-2</span></h3>
-    <p><span class="loc">frontend/src/ws.ts:27,80,118</span> persistiert nur <code>version</code> in <code>localStorage</code>, nicht die Pixel-Daten. Beim Reload ist die <code>pixels</code>-Map leer, aber es wird <code>init_client</code> mit der alten, hohen <code>lastVersion</code> gesendet.</p>
-    <p>Das Backend (<span class="loc">internal/ws.go:108</span>) liefert dann nur Deltas seit dieser Version (<code>sync</code>), sofern der Ring-Buffer sie noch abdeckt. Der Client wendet diese wenigen Events auf eine leere Map an → es erscheinen nur die seit dem letzten Besuch geänderten Pixel, der Rest der Canvas fehlt, bis er zufällig überschrieben wird.</p>
-    <div class="rec"><b>Empfehlung:</b> Entweder beim Reconnect/Reload immer einen vollständigen Snapshot anfordern (<code>lastVersion = 0</code>, wenn keine lokalen Pixel vorliegen), oder die Pixel-Map ebenfalls lokal persistieren. Delta-Sync nur, wenn tatsächlich ein konsistenter lokaler Zustand existiert.</div>
-  </div>
-
-  <div class="card high">
-    <h3><span class="badge b-high">hoch</span> docker-compose Volume zeigt auf falschen Pfad — Persistenz geht verloren <span class="id">HIGH-1</span></h3>
-    <p><span class="loc">docker-compose.yml:9</span> mountet <code>./data:/data</code>. Der Server schreibt aber nach <code>./data/snapshot.json</code> relativ zum WORKDIR <code>/app</code> (<span class="loc">internal/hub.go:36</span>, <span class="loc">Dockerfile:21</span>), also nach <code>/app/data</code>.</p>
-    <p>Der gemountete Volume-Pfad <code>/data</code> wird nie beschrieben; die Snapshots landen im ephemeren Container-Layer und gehen bei jedem <code>docker compose up --force-recreate</code> verloren.</p>
-    <div class="rec"><b>Empfehlung:</b> Volume auf <code>./data:/app/data</code> ändern (oder den Snapshot-Pfad im Server auf <code>/data</code> konfigurierbar machen und dort hin schreiben).</div>
-  </div>
-
-  <div class="card high">
-    <h3><span class="badge b-high">hoch</span> WebSocket-Origin-Whitelist nur für localhost — Produktion blockiert <span class="id">HIGH-2</span></h3>
-    <p><span class="loc">internal/ws.go:55</span> erlaubt als <code>OriginPatterns</code> ausschließlich <code>http://localhost:5173</code> und <code>http://localhost:4000</code>.</p>
-    <p>Beim Deployment (Docker, Port 4000) wird die App über eine Domain/IP aufgerufen; die Origin lautet dann z. B. <code>http://&lt;host&gt;:4000</code> und ist nicht in der Liste → <code>websocket.Accept</code> lehnt mit 403 ab. Alle WS-Verbindungen scheitern, die App bleibt im „Connecting…"-Zustand hängen.</p>
-    <div class="rec"><b>Empfehlung:</b> Erlaubte Origins über eine Env-Variable konfigurierbar machen und in der Deploy-Konfiguration den echten Host eintragen.</div>
-  </div>
-
-  <div class="card high">
-    <h3><span class="badge b-high">hoch</span> Cooldown per selbstgewählter clientId trivial umgehbar <span class="id">HIGH-3</span></h3>
-    <p>Das Rate-Limiting (<span class="loc">internal/hub.go:178</span>) verwendet die vom Client gelieferte <code>clientId</code> als Schlüssel (<span class="loc">internal/ws.go:98</span>). Ein Client kann für jeden Pixel eine neue zufällige, regex-konforme ID senden und so den 5-Sekunden-Cooldown komplett aushebeln.</p>
-    <div class="rec"><b>Empfehlung:</b> Cooldown zusätzlich (oder primär) an eine serverseitige Größe binden, z. B. Remote-IP der Verbindung. Client-ID bleibt für Session-Zuordnung, ist aber nicht allein rate-limit-tragend.</div>
-  </div>
-
-  <div class="card med">
-    <h3><span class="badge b-med">mittel</span> <code>lastAction</code>-Map wächst unbegrenzt <span class="id">MED-1</span></h3>
-    <p><span class="loc">internal/hub.go:239</span> definiert <code>CleanupLastAction</code>, aber die Funktion wird nirgends aufgerufen. Für jede jemals gesehene <code>clientId</code> bleibt ein Eintrag dauerhaft im Speicher — ein langsames, unbegrenztes Leck (in Verbindung mit HIGH-3 sogar beschleunigt).</p>
-    <div class="rec"><b>Empfehlung:</b> Cleanup periodisch per Ticker (analog zu <code>StartAutosave</code>) mit einer Max-Alters-Schwelle aufrufen.</div>
-  </div>
-
-  <div class="card med">
-    <h3><span class="badge b-med">mittel</span> Kein WebSocket-Heartbeat / kein Read-Deadline <span class="id">MED-2</span></h3>
-    <p><span class="loc">internal/ws.go:78</span> liest mit einem nie ablaufenden Context; es gibt kein Ping/Pong und keinen Read-Timeout. Tote Verbindungen (Netzwerkabbruch ohne Close-Frame) bleiben samt Goroutine und Map-Einträgen hängen.</p>
-    <div class="rec"><b>Empfehlung:</b> Periodische Pings mit Pong-Deadline einführen oder pro Read einen Timeout-Context setzen; bei Ausbleiben Verbindung schließen. In README/CLAUDE.md bereits als geplant vermerkt.</div>
-  </div>
-
-  <div class="card med">
-    <h3><span class="badge b-med">mittel</span> Docker-Frontend-Build ignoriert <code>vite.config.ts</code> und hat kein bun-Lockfile <span class="id">MED-3</span></h3>
-    <p><span class="loc">Dockerfile:1-9</span> kopiert nur <code>frontend/</code> und die Root-<code>package.json</code>, aber nicht die <code>vite.config.ts</code> (liegt im Repo-Root). Der Build läuft daher mit Vite-Defaults statt mit <code>root:"frontend"</code>/<code>outDir:"../public/dist"</code> — er funktioniert nur zufällig, weil die Defaults zum Copy-Layout passen. Zudem verweist <code>COPY … bun.lockb*</code> auf eine nicht vorhandene Lockdatei (Repo nutzt <code>package-lock.json</code>), sodass <code>bun install</code> ohne Lock nicht reproduzierbar auflöst.</p>
-    <div class="rec"><b>Empfehlung:</b> Build-Kontext und Vite-Config konsistent halten (Config mitkopieren oder Frontend-Build vollständig in <code>frontend/</code> kapseln) und ein echtes Lockfile committen/kopieren.</div>
-  </div>
-
-  <div class="card med">
-    <h3><span class="badge b-med">mittel</span> Keine Touch-Bedienung & fehlendes Viewport-Meta — auf Mobil unbenutzbar <span class="id">MED-4</span></h3>
-    <p><span class="loc">frontend/src/camera/controls.ts</span> registriert ausschließlich <code>mousedown/mousemove/wheel</code> — kein <code>touchstart/touchmove</code> und kein Pinch-Zoom. <span class="loc">frontend/index.html</span> hat kein <code>viewport</code>-Meta-Tag. Auf Touch-Geräten lässt sich weder pannen noch zoomen noch zuverlässig ein Pixel setzen.</p>
-    <div class="rec"><b>Empfehlung:</b> Touch-/Pointer-Events für Pan &amp; Pinch-Zoom ergänzen und ein <code>&lt;meta name="viewport"&gt;</code> setzen. In README als „Mobile touch controls" bereits als Idee gelistet.</div>
-  </div>
-
-  <div class="card med">
-    <h3><span class="badge b-med">mittel</span> Kein Nutzer-Feedback bei abgelehntem Pixel <span class="id">MED-5</span></h3>
-    <p>Wird ein <code>set_pixel</code> serverseitig verworfen (out of bounds, ungültige Farbe, Cooldown aktiv), erfolgt keinerlei Antwort. Das Frontend setzt <code>selectedPixel</code> optimistisch zurück (<span class="loc">frontend/src/main.ts:67</span>) und der Nutzer erhält keine Rückmeldung, warum nichts passiert ist.</p>
-    <div class="rec"><b>Empfehlung:</b> Eine kompakte <code>rejected</code>/<code>error</code>-Nachricht vom Server senden und im UI kurz anzeigen (z. B. Toast oder rot blinkender Cooldown-Button).</div>
-  </div>
-
-  <div class="card low">
-    <h3><span class="badge b-low">niedrig</span> <code>MaxMessageSize</code> ungenutzt — kein Read-Limit gesetzt <span class="id">LOW-1</span></h3>
-    <p><span class="loc">internal/config.go:9</span> definiert <code>MaxMessageSize = 1024</code>, aber die Konstante wird nie verwendet; auf der Verbindung ist kein <code>SetReadLimit</code> gesetzt, es gilt still das Bibliotheks-Default (32 KiB).</p>
-    <div class="rec"><b>Empfehlung:</b> <code>conn.SetReadLimit(MaxMessageSize)</code> nach dem Accept setzen oder die tote Konstante entfernen.</div>
-  </div>
-
-  <div class="card low">
-    <h3><span class="badge b-low">niedrig</span> Toter Code &amp; doppelte Verzeichnis-Anlage <span class="id">LOW-2</span></h3>
-    <p><span class="loc">internal/hub.go:252</span> <code>StartPersistenceLoop</code> wird nie aufgerufen (Autosave läuft über <code>autosave.go</code>). Zusätzlich legen sowohl <code>NewHub</code> (<span class="loc">internal/hub.go:31</span>) als auch <code>NewPersistence</code> (<span class="loc">internal/persistence.go:20</span>) das <code>data</code>-Verzeichnis an — mit uneinheitlichem Pfad (<code>./data</code> vs. <code>data</code>).</p>
-    <div class="rec"><b>Empfehlung:</b> Ungenutzte Funktion entfernen und die Verzeichnis-Anlage an einer Stelle bündeln.</div>
-  </div>
-
-  <div class="card low">
-    <h3><span class="badge b-low">niedrig</span> Accessibility der Palette und Canvas <span class="id">LOW-3</span></h3>
-    <p><span class="loc">frontend/index.html:15-54</span>: die Farb-Buttons haben keinen zugänglichen Namen (nur Hintergrundfarbe), die Canvas ist nicht per Tastatur bedienbar und die aktive Farbe wird nur visuell (Klasse <code>active</code>) markiert.</p>
-    <div class="rec"><b>Empfehlung:</b> <code>aria-label</code> mit Farbnamen, <code>aria-pressed</code> für die aktive Farbe und optionale Tastatur-Navigation für die Pixel-Auswahl ergänzen.</div>
-  </div>
-
-  <div class="card info">
-    <h3><span class="badge b-info">info</span> README-Status-Checkboxen veraltet <span class="id">INFO-1</span></h3>
-    <p><span class="loc">README.md:156-166</span> markiert „Atomic snapshot writes", „Graceful shutdown persistence" und „Periodic autosave loop" als offen (<code>[ ]</code>). Alle drei sind längst implementiert (<span class="loc">internal/persistence.go:41-47</span> tmp→rename, <span class="loc">internal/autosave.go</span> Autosave + Shutdown-Save).</p>
-    <div class="rec"><b>Empfehlung:</b> Status im README auf den echten Stand bringen.</div>
-  </div>
-
-  <div class="card info">
-    <h3><span class="badge b-info">info</span> Keine automatisierten Tests <span class="id">INFO-2</span></h3>
-    <p>Im gesamten Repo existieren weder Go- noch Frontend-Tests. Kritische Kernlogik (Ring-Buffer in <code>store.go</code>, <code>GetSince</code>-Grenzfälle, Cooldown, Koordinaten-Umrechnung) ist ungeschützt gegen Regressionen — gerade die Sync-Grenzfälle aus CRIT-2 wären hier auffällig geworden.</p>
-    <div class="rec"><b>Empfehlung:</b> Mit gezielten Unit-Tests für <code>PixelStore</code> (Ring-Wraparound, <code>GetSince</code> unter/über dem Fenster) und die Koordinaten-Utils starten; im CI ein <code>go test ./...</code>-Gate ergänzen.</div>
-  </div>
-
-  <h2 id="strong">2 · Was schon stark ist</h2>
-  <div class="card low">
-    <ul class="tight">
-      <li><b>Atomare Snapshot-Writes:</b> <code>persistence.go</code> schreibt via <code>tmp → rename</code>, kein Halb-Zustand bei Crash.</li>
-      <li><b>Sauberes Shutdown &amp; Autosave:</b> <code>autosave.go</code> deckt periodisches Speichern und SIGINT/SIGTERM-Save ab.</li>
-      <li><b>Server-Autorität konsequent:</b> alle Pixel werden serverseitig validiert (<code>ValidCoords/ValidColor/ValidClientID</code>), Clients senden nur Intents.</li>
-      <li><b>Effizienter Ring-Buffer</b> mit fester Kapazität verhindert unbegrenztes Event-Wachstum.</li>
-      <li><b>Robustes Reconnect:</b> exponentielles Backoff + Jitter + Online/Offline-Handling im WS-Client.</li>
-      <li><b>Saubere Nebenläufigkeit:</b> durchgängige <code>RWMutex</code>-Nutzung im Hub, per-Client Send-Channel mit Drop bei Überlauf.</li>
-      <li><b>Grüne Gates:</b> <code>go vet</code>, <code>go build</code> und <code>tsc --noEmit</code> laufen fehlerfrei; TS-Config ist strikt (<code>strict</code>, <code>noUncheckedIndexedAccess</code>).</li>
-    </ul>
-  </div>
-
-  <h2 id="decided">3 · Bewusst entschieden</h2>
-  <div class="card info">
-    <ul class="tight">
-      <li><b>In-Memory-Store + JSON-Snapshot</b> statt Datenbank — passt zum Ziel „hackbar &amp; einfach", bewusst nicht auf Skalierung optimiert.</li>
-      <li><b>Feste 6-Farben-Palette</b> (<code>config.go</code> / <code>index.html</code>) — minimalistisch im r/place-Geist.</li>
-      <li><b>Text-basiertes JSON-WS-Protokoll</b> statt Binärprotokoll — Lesbarkeit über Performance (Binär ist als Zukunft notiert).</li>
-      <li><b>Kein Frontend-Framework</b> — direkter Canvas + TypeScript als ausdrückliches Designprinzip.</li>
-    </ul>
-  </div>
-
-</div>
-</body>
+  </body>
 </html>
